@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ניתוח SOW — לוח מחוונים | משרד הביטחון</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+</head>
+<body>
+
+  <!-- ═══ Navigation ═══════════════════════════════════════════════════════ -->
+  <nav class="navbar">
+    <div class="navbar-brand">
+      <span class="navbar-icon">🛡️</span>
+      <div>
+        <div class="navbar-title">ניתוח SOW — מערכת מחוונים</div>
+        <div class="navbar-subtitle">אגף מנה"ר — משרד הביטחון</div>
+      </div>
+    </div>
+    <div class="nav-links">
+      <a href="#dashboard" class="nav-link">לוח מחוונים</a>
+      <a href="#documents" class="nav-link">מסמכים (16)</a>
+      <a href="#vendors" class="nav-link">ספקים (29)</a>
+    </div>
+  </nav>
+
+  <main class="main-content">
+
+    <!-- ═══ Dashboard ═════════════════════════════════════════════════════ -->
+    <section id="dashboard" class="section">
+      <h2 class="section-title">לוח מחוונים</h2>
+
+      <!-- Stats cards -->
+      <div class="stats-grid" id="stats-grid">
+        <!-- Filled by JS -->
+      </div>
+
+      <!-- Score distribution chart -->
+      <div class="chart-panel">
+        <h3 class="chart-title">התפלגות ציונים</h3>
+        <div class="chart-wrapper">
+          <canvas id="scoreChart"></canvas>
+        </div>
+        <div class="score-legend" id="score-legend"></div>
+      </div>
+    </section>
+
+    <!-- ═══ Documents ════════════════════════════════════════════════════ -->
+    <section id="documents" class="section">
+      <div class="section-header">
+        <h2 class="section-title">מסמכי SOW</h2>
+        <p class="section-desc">לחץ על כל כרטיס לניתוח מלא, מסמך משופר, ואפשרות Google Doc</p>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters-bar">
+        <div class="filter-group">
+          <span class="filter-label">סנן לפי ציון:</span>
+          <div class="filter-chips" id="score-filters">
+            <button class="chip chip-active" data-score="all">הכל</button>
+            <button class="chip chip-score5" data-score="5">מעולה (5)</button>
+            <button class="chip chip-score4" data-score="4">טוב (4)</button>
+            <button class="chip chip-score3" data-score="3">בינוני (3)</button>
+            <button class="chip chip-score2" data-score="2">גרוע (2)</button>
+            <button class="chip chip-score1" data-score="1">גרוע מאוד (1)</button>
+            <button class="chip chip-unreadable" data-score="null">לא קריא</button>
+          </div>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">קטגוריה:</span>
+          <select id="category-filter" class="filter-select">
+            <option value="all">כל הקטגוריות</option>
+          </select>
+        </div>
+        <div class="filter-group search-group">
+          <input type="text" id="search-input" class="search-input" placeholder="חיפוש שם קובץ..." />
+        </div>
+      </div>
+
+      <!-- Document grid -->
+      <div id="doc-count" class="doc-count"></div>
+      <div id="doc-grid" class="doc-grid">
+        <!-- Filled by JS -->
+      </div>
+    </section>
+
+    <!-- ═══ Vendors ══════════════════════════════════════════════════════ -->
+    <section id="vendors" class="section">
+      <div class="section-header">
+        <h2 class="section-title">מחקר ספקים</h2>
+        <p class="section-desc">29 ספקים ב-9 קטגוריות רכש — ישימות מוערכת על סמך דרישות ה-SOW</p>
+      </div>
+      <div id="vendor-container">
+        <!-- Filled by JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ═══ Footer ════════════════════════════════════════════════════════ -->
+  <footer class="footer">
+    <p>מסמך זה וכל נספחיו הינו בבעלות בלעדית של משרד הביטחון. חל איסור להעבירו לצד שלישי ללא אישור בכתב ומראש.</p>
+    <p class="footer-sub">נוצר עם מערכת ניתוח SOW אוטומטית | <a href="http://localhost:8080/website/index.html">http://localhost:8080/website/index.html</a></p>
+  </footer>
+
+  <!-- ═══ Document Detail Modal ════════════════════════════════════════ -->
+  <div id="modal-overlay" class="modal-overlay hidden" onclick="handleOverlayClick(event)">
+    <div class="modal" role="dialog" aria-modal="true">
+      <button class="modal-close" onclick="closeModal()" aria-label="סגור">✕</button>
+
+      <!-- Modal header -->
+      <div class="modal-header" id="modal-header">
+        <!-- Filled by JS -->
+      </div>
+
+      <!-- Tab navigation -->
+      <div class="modal-tabs" id="modal-tabs">
+        <button class="tab-btn tab-active" data-tab="analysis">ניתוח מפורט</button>
+        <button class="tab-btn" data-tab="research">מחקר חיצוני</button>
+        <button class="tab-btn" data-tab="vendors-tab">ישימות ספקים</button>
+        <button class="tab-btn" data-tab="recommendations">המלצות</button>
+        <button class="tab-btn" data-tab="fixed-doc">מסמך משופר</button>
+      </div>
+
+      <!-- Tab contents -->
+      <div class="modal-body">
+        <!-- Analysis tab -->
+        <div class="tab-content tab-active" id="tab-analysis">
+          <div id="analysis-content"></div>
+        </div>
+
+        <!-- External research tab -->
+        <div class="tab-content" id="tab-research">
+          <div id="research-content" class="markdown-body"></div>
+        </div>
+
+        <!-- Vendor feasibility tab -->
+        <div class="tab-content" id="tab-vendors-tab">
+          <div id="vendor-feasibility-content"></div>
+        </div>
+
+        <!-- Recommendations tab -->
+        <div class="tab-content" id="tab-recommendations">
+          <div id="recommendations-content"></div>
+        </div>
+
+        <!-- Fixed document tab -->
+        <div class="tab-content" id="tab-fixed-doc">
+          <div class="fixed-doc-actions" id="fixed-doc-actions">
+            <!-- Filled by JS -->
+          </div>
+          <div id="fixed-doc-content" class="markdown-body">
+            <!-- Markdown rendered here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ Scripts ══════════════════════════════════════════════════════ -->
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+
+</body>
+</html>
