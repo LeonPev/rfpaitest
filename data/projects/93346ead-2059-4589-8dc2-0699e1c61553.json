@@ -1,0 +1,22 @@
+{
+  "id": "93346ead-2059-4589-8dc2-0699e1c61553",
+  "name": "צור בבקשה SOW חדשים עבור דלק סליקה שמתאים ל 2026-2",
+  "status": "wip",
+  "created_at": "2026-03-10T00:13:33.513348",
+  "updated_at": "2026-03-10T00:13:33.513490",
+  "file_paths": [
+    "C:UsersKimiDesktopsrc\rfpaitestdataSOWדלקסליקהתנאים מיוחדים למכרז שירותי סליקה - 20.6.19.docx",
+    "C:UsersKimiDesktopsrc\rfpaitestdataSOWדלקסליקהנספח ארכיון - תכולת עבודה למכרז הסליקה SOW  - 20-6-19.doc"
+  ],
+  "context": "צור בבקשה SOW חדשים עבור דלק סליקה שמתאים ל 2026-2030",
+  "sub_type": "כללי",
+  "result": null,
+  "chat_history": [
+    {
+      "role": "user",
+      "content": "צור בבקשה SOW חדשים עבור דלק סליקה שמתאים ל 2026-2030"
+    }
+  ],
+  "feedback": [],
+  "generated_file": null
+}

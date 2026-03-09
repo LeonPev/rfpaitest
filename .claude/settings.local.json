@@ -5,7 +5,19 @@
       "WebFetch(domain:doc-0s-0s-docstext.googleusercontent.com)",
       "Bash(pip:*)",
       "Bash(pip3:*)",
-      "Bash(python -c:*)"
+      "Bash(python -c:*)",
+      "Bash(curl:*)",
+      "Bash(taskkill:*)",
+      "Bash(netstat:*)",
+      "Bash(cmd /c \"taskkill /PID 21696 /F & taskkill /PID 37416 /F & taskkill /PID 9940 /F\")",
+      "Bash(cmd /c \"wmic process where name=''python.exe'' get ProcessId,CommandLine 2>nul\")",
+      "Bash(cmd /c \"tasklist /fi \"\"imagename eq python.exe\"\" 2>nul\")",
+      "Bash(powershell -Command \"Get-Process -Name python -ErrorAction SilentlyContinue | Format-Table Id, CPU, MainWindowTitle -AutoSize\")",
+      "Bash(powershell -Command \"Get-Process -Name python -ErrorAction SilentlyContinue | Stop-Process -Force; Start-Sleep -Seconds 2; Get-NetTCPConnection -LocalPort 5001 -ErrorAction SilentlyContinue | Select-Object LocalAddress,LocalPort,State\")",
+      "Bash(powershell -Command \"Get-Process -Name python | Stop-Process -Force -ErrorAction SilentlyContinue; Write-Output ''done''\")",
+      "Bash(powershell -Command \"Get-Process | Where-Object { $_.Name -like ''*python*'' } | Select-Object Id, Name, CPU\")",
+      "Bash(powershell -NoProfile -Command \"Stop-Process -Id 9940,21696,37416,16720 -Force 2>$null; Write-Output ''killed''; Start-Sleep 2; \\(Get-NetTCPConnection -LocalPort 5001 -State Listen -ErrorAction SilentlyContinue\\).Count\")",
+      "Bash(powershell -NoProfile -Command \"Stop-Process -Id 9940 -Force; Stop-Process -Id 21696 -Force; Stop-Process -Id 37416 -Force; Stop-Process -Id 16720 -Force; Write-Output done\")"
     ]
   }
 }

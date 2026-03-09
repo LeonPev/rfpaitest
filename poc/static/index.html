@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>רכש חכם — AI למשרד הביטחון</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
+</head>
+<body>
+
+<!-- SVG refraction filter -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <filter id="lg-refract" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.012 0.016" numOctaves="3" seed="5" result="noise"/>
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </defs>
+</svg>
+
+<!-- Ambient orbs -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- ─── Navbar ──────────────────────────────────────────────────────────── -->
+<nav class="nav">
+  <div class="nav-logo">
+    <img class="nav-logo-mark" src="icon 2 flat.png" alt="Logo">
+    <div>
+      <div class="nav-wordmark">רכש חכם</div>
+      <div class="nav-sub">מערכת AI למשרד הביטחון</div>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link" href="#" onclick="showScreen('chat');return false">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      עוזר AI
+    </a>
+    <a class="nav-link" href="#" onclick="showScreen('projects');return false">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      פרויקטים
+    </a>
+    <a class="nav-link" href="#" onclick="showScreen('dashboard');return false">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+      לוח בקרה
+    </a>
+    <a class="nav-link" href="#" onclick="showScreen('analytics');return false">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+      אנליטיקס
+    </a>
+    <div class="nav-user-badge">
+      <span class="nav-user-avatar">ד</span>
+      <span class="nav-user-name">דנה</span>
+    </div>
+  </div>
+</nav>
+
+<!-- ─── SCREEN: Chat (MAIN) ──────────────────────────────────────────── -->
+<div id="screen-chat" class="screen page">
+  <div class="chat-layout">
+
+    <!-- File sidebar -->
+    <aside class="file-sidebar gc" id="file-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">מאגר מסמכים</div>
+        <input class="inp sidebar-search" type="text" placeholder="חיפוש מסמכים..." id="doc-search" oninput="filterSidebarDocs(this.value)">
+      </div>
+      <div class="sidebar-doc-list" id="sidebar-doc-list">
+        <div class="sidebar-loading">טוען מסמכים...</div>
+      </div>
+      <div class="sidebar-selected" id="sidebar-selected">
+        <div class="sidebar-selected-header">
+          <span class="sidebar-selected-label">נבחרו: <strong id="selected-count">0</strong></span>
+          <button class="btn-glass btn-xs" onclick="clearSelectedFiles()">נקה</button>
+        </div>
+        <div class="sidebar-selected-chips" id="sidebar-selected-chips"></div>
+      </div>
+    </aside>
+
+    <!-- Main chat area -->
+    <div class="chat-main">
+      <div class="chat-panel gc">
+        <div class="chat-panel-header">
+          <div class="chat-panel-title-row">
+            <svg class="chat-ai-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="url(#grad1)" stroke-width="2"/>
+              <path d="M8 12l2 2 4-4" stroke="url(#grad1)" stroke-width="2" stroke-linecap="round"/>
+              <defs><linearGradient id="grad1" x1="0" y1="0" x2="24" y2="24"><stop offset="0%" stop-color="#4f46e5"/><stop offset="100%" stop-color="#7c3aed"/></linearGradient></defs>
+            </svg>
+            <div>
+              <div class="chat-panel-title">עוזר הרכש החכם</div>
+              <div class="chat-panel-sub">מערכת AI לניתוח, עדכון ויצירת מסמכי SOW</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-messages" id="chat-messages">
+          <div class="chat-bubble assistant loading-bubble" id="initial-loading">
+            <div class="typing-indicator"><span></span><span></span><span></span></div>
+            <span>מנתח את מאגר המסמכים...</span>
+          </div>
+        </div>
+
+        <div class="chat-controls">
+          <div class="chat-input-row">
+            <textarea class="inp chat-input" id="chat-input" rows="1" placeholder="שאל שאלה, בקש ניתוח, או תאר את הצורך שלך..."></textarea>
+            <button class="btn-grad chat-send-btn" onclick="sendChatMessage()" id="chat-send-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4z"/></svg>
+              שלח
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SCREEN: Projects ─────────────────────────────────────────────── -->
+<div id="screen-projects" class="screen page hidden">
+  <div class="main-content">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-eyebrow">ניהול פרויקטים</div>
+        <h2 class="section-title">הפרויקטים שלי</h2>
+        <p class="section-desc">מעקב אחר כל המשימות — ממתין, בעבודה, הושלם</p>
+      </div>
+      <div class="projects-filter-bar">
+        <button class="chip chip-active" data-pstatus="all" onclick="setProjectFilter('all')">הכל</button>
+        <button class="chip" data-pstatus="pending" onclick="setProjectFilter('pending')">ממתין</button>
+        <button class="chip" data-pstatus="wip" onclick="setProjectFilter('wip')">בעבודה</button>
+        <button class="chip" data-pstatus="completed" onclick="setProjectFilter('completed')">הושלם</button>
+      </div>
+      <div class="projects-grid" id="projects-grid">
+        <div class="empty-state"><h3>אין פרויקטים עדיין</h3><p>התחל שיחה עם העוזר כדי ליצור פרויקט חדש</p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SCREEN: Dashboard ────────────────────────────────────────────── -->
+<div id="screen-dashboard" class="screen page hidden">
+  <div class="main-content">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-eyebrow">סקירה כללית</div>
+        <h2 class="section-title">מודיעין מסמכי SOW</h2>
+        <p class="section-desc">ניתוח מסמכי רכש מונע AI</p>
+      </div>
+      <div class="stats-grid" id="stats-grid"></div>
+      <div class="gc chart-panel">
+        <div class="chart-title">התפלגות ציונים</div>
+        <div class="chart-wrapper"><canvas id="score-chart"></canvas></div>
+        <div class="score-legend" id="score-legend"></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-header">
+        <div class="section-eyebrow">מסמכים</div>
+        <h2 class="section-title">מאגר SOW</h2>
+      </div>
+      <div class="gc filters-bar">
+        <div class="filter-group">
+          <span class="filter-label">ציון:</span>
+          <div class="filter-chips" id="score-filter-chips"></div>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">קטגוריה:</span>
+          <select class="inp filter-select" id="category-select" onchange="state.categoryFilter=this.value;renderDocuments()">
+            <option value="all">הכל</option>
+          </select>
+        </div>
+        <input class="inp search-input" type="text" placeholder="חיפוש..." oninput="state.search=this.value;renderDocuments()">
+      </div>
+      <div class="doc-count" id="doc-count"></div>
+      <div class="doc-grid" id="doc-grid"></div>
+    </div>
+    <div class="section">
+      <div class="section-header">
+        <div class="section-eyebrow">ספקים</div>
+        <h2 class="section-title">מחקר ספקים</h2>
+      </div>
+      <div id="vendor-list"></div>
+    </div>
+  </div>
+  <div class="footer">רכש חכם — מערכת מודיעין מסמכים</div>
+</div>
+
+<!-- ─── SCREEN: Analytics ────────────────────────────────────────────── -->
+<div id="screen-analytics" class="screen page hidden">
+  <div class="main-content">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-eyebrow">אנליטיקס</div>
+        <h2 class="section-title">מדדי שימוש ואימוץ</h2>
+        <p class="section-desc">מעקב אחר שימוש במערכת, עלויות AI, ושיעור אימוץ המלצות</p>
+      </div>
+      <div class="analytics-grid" id="analytics-grid">
+        <div class="empty-state"><h3>טוען נתונים...</h3></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-header">
+        <div class="section-eyebrow">משוב</div>
+        <h2 class="section-title">אימוץ המלצות AI</h2>
+        <p class="section-desc">ניתוח קבלת והטלת המלצות AI בחודש האחרון</p>
+      </div>
+      <div class="gc adoption-container">
+        <div class="adoption-wrapper">
+          <div class="adoption-chart-box">
+            <canvas id="adoption-chart" height="220" width="220"></canvas>
+          </div>
+          <div class="adoption-stats" id="adoption-stats">
+            <div class="adoption-stat-item">
+              <div class="adoption-stat-dot"></div>
+              <div class="adoption-stat-content">
+                <div class="adoption-stat-label">אושרו</div>
+                <div class="adoption-stat-value" id="adoption-accepts">0</div>
+                <div class="adoption-stat-percent" id="adoption-accepts-pct">0%</div>
+                <div class="adoption-stat-bar">
+                  <div class="adoption-stat-fill" id="adoption-accepts-bar" style="width:0%"></div>
+                </div>
+              </div>
+            </div>
+            <div class="adoption-stat-item">
+              <div class="adoption-stat-dot"></div>
+              <div class="adoption-stat-content">
+                <div class="adoption-stat-label">נדחו</div>
+                <div class="adoption-stat-value" id="adoption-rejects">0</div>
+                <div class="adoption-stat-percent" id="adoption-rejects-pct">0%</div>
+                <div class="adoption-stat-bar">
+                  <div class="adoption-stat-fill" id="adoption-rejects-bar" style="width:0%"></div>
+                </div>
+              </div>
+            </div>
+            <div class="adoption-stat-item">
+              <div class="adoption-stat-dot"></div>
+              <div class="adoption-stat-content">
+                <div class="adoption-stat-label">עריכות</div>
+                <div class="adoption-stat-value" id="adoption-edits">0</div>
+                <div class="adoption-stat-percent" id="adoption-edits-pct">0%</div>
+                <div class="adoption-stat-bar">
+                  <div class="adoption-stat-fill" id="adoption-edits-bar" style="width:0%"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SCREEN: Thinking ─────────────────────────────────────────────── -->
+<div id="screen-thinking" class="screen page hidden">
+  <div class="thinking-layout">
+    <div class="thinking-header gc">
+      <h2 class="thinking-title">מעבד את הבקשה שלך</h2>
+      <p class="thinking-sub">סוכני AI קוראים, מנתחים ומייצרים מסמכים</p>
+      <div class="progress-wrap">
+        <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:.8rem">
+        <span class="progress-label" id="progress-label">מאתחל...</span>
+        <button class="btn-stop" onclick="stopGeneration()">⏹ עצור</button>
+      </div>
+    </div>
+    <div class="agents-panel" id="agents-panel">
+      <div class="gc agent-card" id="agent-orchestrator">
+        <div class="agent-card-top">
+          <span class="agent-icon">🎯</span>
+          <div class="agent-info">
+            <div class="agent-name">מתזמן</div>
+            <div class="agent-msg" id="msg-orchestrator">ממתין...</div>
+          </div>
+          <span class="agent-status-icon" id="status-orchestrator">⏳</span>
+        </div>
+        <div class="agent-log" id="log-orchestrator"></div>
+      </div>
+      <div class="gc agent-card" id="agent-domain_expert">
+        <div class="agent-card-top">
+          <span class="agent-icon">📊</span>
+          <div class="agent-info">
+            <div class="agent-name">מומחה תחום</div>
+            <div class="agent-msg" id="msg-domain_expert">ממתין...</div>
+          </div>
+          <span class="agent-status-icon" id="status-domain_expert">⏳</span>
+        </div>
+        <div class="agent-log" id="log-domain_expert"></div>
+      </div>
+      <div class="gc agent-card" id="agent-legal">
+        <div class="agent-card-top">
+          <span class="agent-icon">⚖️</span>
+          <div class="agent-info">
+            <div class="agent-name">משפטי + שוק</div>
+            <div class="agent-msg" id="msg-legal">ממתין...</div>
+          </div>
+          <span class="agent-status-icon" id="status-legal">⏳</span>
+        </div>
+        <div class="agent-log" id="log-legal"></div>
+      </div>
+    </div>
+    <div class="gc activity-log">
+      <div class="activity-log-header">יומן פעילות</div>
+      <div class="activity-log-body" id="activity-log-body"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── SCREEN: Results ──────────────────────────────────────────────── -->
+<div id="screen-results" class="screen page hidden">
+  <div class="results-main">
+    <div class="gc results-header">
+      <div class="results-header-left">
+        <div class="results-title-row">
+          <h2 class="results-title" id="results-title">מסמכים מוכנים</h2>
+          <span class="results-badge" id="results-badge">הופק ב-AI</span>
+        </div>
+        <div class="results-meta" id="results-meta"></div>
+      </div>
+      <div class="results-actions">
+        <button class="btn-glass btn-sm" onclick="showScreen('chat')">חזרה לצ'אט</button>
+        <button class="btn-success btn-sm" onclick="acceptAll()">אשר הכל</button>
+        <div class="export-wrap">
+          <button class="btn-grad btn-sm" onclick="toggleExportMenu()">ייצוא</button>
+          <div class="export-menu hidden" id="export-menu">
+            <button class="export-menu-item" onclick="exportMD()">הורד MD (כולל תוכן עניינים)</button>
+            <button class="export-menu-item" onclick="exportPDF()">הורד PDF (פורמט צה"ל)</button>
+            <button class="export-menu-item" onclick="exportJSON()">הורד JSON</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="doc-tabs-bar" id="doc-tabs-bar"></div>
+    <div id="doc-tabs-body"></div>
+    <div class="results-footer">
+      <button class="btn-success btn-sm" onclick="acceptAll()">אשר הכל ממתינים</button>
+      <button class="btn-grad btn-sm" onclick="exportPDF()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+        ייצוא PDF
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Modal (doc detail) ───────────────────────────────────────────── -->
+<div id="modal-overlay" class="modal-overlay hidden" onclick="if(event.target===this)closeModal()">
+  <div class="gc modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-header">
+      <h3 id="modal-title"></h3>
+    </div>
+    <div class="modal-tabs" id="modal-tabs"></div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- ─── Rename Modal ─────────────────────────────────────────────────── -->
+<div id="rename-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeRenameModal()">
+  <div class="gc modal" style="max-width:400px">
+    <div class="modal-header" style="margin-bottom:1rem">
+      <h3>שנה שם פרויקט</h3>
+    </div>
+    <input class="inp" id="rename-input" style="width:100%;margin-bottom:1rem" placeholder="שם חדש לפרויקט">
+    <div style="display:flex;gap:.5rem;justify-content:flex-end">
+      <button class="btn-glass btn-sm" onclick="closeRenameModal()">ביטול</button>
+      <button class="btn-grad btn-sm" onclick="confirmRename()">שמור</button>
+    </div>
+  </div>
+</div>
+
+<script src="data/SOW/website/data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
