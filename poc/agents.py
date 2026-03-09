@@ -182,17 +182,31 @@ def generate_initial_analysis(user_name: str = "דנה") -> dict:
 
 def _detect_analytical_request(message: str) -> bool:
     """Detect if message is a direct analytical/pipeline request vs a chat request."""
+    # Hebrew analytical keywords and stems
     analytical_keywords = [
-        "ניתוח פערים", "analysis", "gap analysis", "analyze",
-        "עדכן", "update", "create", "generate", "יצור",
-        "השוו", "compare", "comparison",
+        "ניתוח", "analysis", "analyze",
+        "עדכ", "update",  # עדכן, עדכון, עדכני, etc.
+        "יצ", "create", "generate",  # יצור, יצירת, יצירה, etc.
+        "השו", "compare", "comparison",  # השוו, השוואה, etc.
         "סקור", "review", "examine",
-        "דרישות", "requirements", "specification",
-        "2026", "2027", "2028", "2029", "2030", "תכולת עבודה", "sow",
-        "מסמך", "document", "report", "טיוטה", "draft",
+        "דריש", "requirements", "specification",  # דרישות, דרישה, etc.
+        "2026", "2027", "2028", "2029", "2030", "202", # years
+        "תכול", "sow", "statement of work",  # תכולה, תכולת, etc.
+        "מסמ", "document", "report",  # מסמך, מסמכים, etc.
+        "טיוט", "draft",  # טיוטה, טיוטות, etc.
+        "דלק", "fuel",  # דלק
+        "סליק", "payment",  # סליקה, סליקת, etc.
+        "גיבוש", "consolidate",  # גיבוש
     ]
     msg_lower = message.lower()
-    return any(kw in msg_lower for kw in analytical_keywords) or len(message) > 100
+
+    # Check if any keyword matches
+    match = any(kw in msg_lower for kw in analytical_keywords)
+
+    # Also auto-trigger for long requests (likely analytical)
+    is_long = len(message) > 80
+
+    return match or is_long
 
 
 def chat_recommend(message: str, history: list, available_docs: list) -> dict:
@@ -201,12 +215,26 @@ def chat_recommend(message: str, history: list, available_docs: list) -> dict:
     # Check if this is an analytical request that should go to pipeline directly
     if _detect_analytical_request(message):
         # Recommend relevant SOW documents for analysis
-        sow_docs = [d for d in available_docs if 'sow' in d.get('name', '').lower() or d.get('category', '').lower().startswith('s')]
-        recommended = sow_docs[:3] if sow_docs else available_docs[:3]
-        doc_names = ", ".join([d['name'][:50] for d in recommended]) if recommended else "כל המסמכים הזמינים"
+        msg_lower = message.lower()
+
+        # First, try to find documents matching the specific domain mentioned in the message
+        domain_matched_docs = []
+        if "דלק" in message or "fuel" in msg_lower:
+            domain_matched_docs = [d for d in available_docs if 'דלק' in d.get('name', '') or 'fuel' in d.get('name', '').lower() or d.get('category', '').lower() in ['דלק', 'fuel']]
+        elif "ניקוי" in message or "clean" in msg_lower:
+            domain_matched_docs = [d for d in available_docs if 'ניקוי' in d.get('name', '') or 'clean' in d.get('name', '').lower()]
+
+        # Then fall back to SOW documents in general
+        if domain_matched_docs:
+            recommended = domain_matched_docs[:5]
+        else:
+            sow_docs = [d for d in available_docs if 'sow' in d.get('name', '').lower() or 'sow' in d.get('category', '').lower()]
+            recommended = (sow_docs[:4] if sow_docs else available_docs[:4])
+
+        doc_names = ", ".join([d['name'][:40] for d in recommended]) if recommended else "כל המסמכים הזמינים"
 
         return {
-            "message": f"✓ מתחיל ניתוח מעמיק\n📄 מסמכים: {doc_names}\n⏳ טוען סוכנים...",
+            "message": f"✓ מתחיל ניתוח מעמיק\n📄 מסמכים: {doc_names}\n⏳ טוען סוכנים (מומחה תחום, משפטי, שוק)...",
             "recommended_files": recommended,
             "suggested_actions": [],
             "proposed_prompt": message,  # Use message as context
@@ -273,17 +301,24 @@ def chat_recommend(message: str, history: list, available_docs: list) -> dict:
         print(f"JSON parse error in chat_recommend: {str(je)[:200]}")
         # If message looks analytical, go straight to pipeline
         if _detect_analytical_request(message):
-            sow_docs = [d for d in available_docs if 'sow' in d.get('name', '').lower() or d.get('category', '').lower().startswith('s')]
-            recommended = sow_docs[:3] if sow_docs else available_docs[:3]
+            msg_lower = message.lower()
+            # Smart domain detection
+            if "דלק" in message or "fuel" in msg_lower:
+                docs = [d for d in available_docs if 'דלק' in d.get('name', '') or 'fuel' in d.get('name', '').lower()]
+            elif "ניקוי" in message or "clean" in msg_lower:
+                docs = [d for d in available_docs if 'ניקוי' in d.get('name', '')]
+            else:
+                docs = [d for d in available_docs if 'sow' in d.get('name', '').lower()]
+
+            recommended = docs[:5] if docs else available_docs[:4]
             return {
-                "message": f"✓ מעבדת את בקשת הניתוח בצורה ישירה\n📊 ניתוח מלא של {len(recommended)} מסמכים...",
+                "message": f"✓ מעבדת את בקשת הניתוח בצורה ישירה\n📊 ניתוח מלא של {len(recommended)} מסמכים בעזרת סוכנים מומחים...",
                 "recommended_files": recommended,
                 "suggested_actions": [],
                 "proposed_prompt": message,
                 "ready_to_generate": True,
                 "auto_start": True,
             }
-        # Otherwise, ask user to be more specific
         return {
             "message": "בואי נסגל את הבקשה - בחרי מסמכים מהסרגל הצדדי או תני לי שם ספציפי של קובץ.",
             "recommended_files": [],
@@ -295,10 +330,18 @@ def chat_recommend(message: str, history: list, available_docs: list) -> dict:
         print(f"Exception in chat_recommend: {str(e)[:200]}")
         # Fallback: if it looks analytical, go to pipeline
         if _detect_analytical_request(message):
-            sow_docs = [d for d in available_docs if 'sow' in d.get('name', '').lower() or d.get('category', '').lower().startswith('s')]
-            recommended = sow_docs[:3] if sow_docs else available_docs[:3]
+            msg_lower = message.lower()
+            # Smart domain detection
+            if "דלק" in message or "fuel" in msg_lower:
+                docs = [d for d in available_docs if 'דלק' in d.get('name', '') or 'fuel' in d.get('name', '').lower()]
+            elif "ניקוי" in message or "clean" in msg_lower:
+                docs = [d for d in available_docs if 'ניקוי' in d.get('name', '')]
+            else:
+                docs = [d for d in available_docs if 'sow' in d.get('name', '').lower()]
+
+            recommended = docs[:5] if docs else available_docs[:4]
             return {
-                "message": f"✓ משנה מצב לעיבוד מלא של הניתוח שלך...\n⚙️ סוכנים בעבודה...",
+                "message": f"✓ משנה מצב לעיבוד מלא של הניתוח שלך...\n⚙️ סוכנים בעבודה (מומחה תחום דלק, משפטי, שוק)...",
                 "recommended_files": recommended,
                 "suggested_actions": [],
                 "proposed_prompt": message,
