@@ -7,3 +7,6 @@
 {"session_id": "e313c9b3-ecc9-4dd5-a344-4ac2d0ce2074", "project_id": "609cadb7-8670-4f8c-a656-c7c11b878e96", "item_id": "sec_1", "action": "reject", "text": "", "type": "section_feedback", "timestamp": "2026-03-09T23:02:47.306341"}
 {"session_id": "e313c9b3-ecc9-4dd5-a344-4ac2d0ce2074", "project_id": "609cadb7-8670-4f8c-a656-c7c11b878e96", "item_id": "sec_1", "action": "accept", "text": "", "type": "section_feedback", "timestamp": "2026-03-09T23:02:48.616408"}
 {"session_id": "e313c9b3-ecc9-4dd5-a344-4ac2d0ce2074", "project_id": "609cadb7-8670-4f8c-a656-c7c11b878e96", "action": "accept_all", "count": 0, "type": "batch_action", "timestamp": "2026-03-09T23:02:52.125288"}
+{"session_id": "703f5707-e4ac-42dd-aeea-69b0a48db40b", "project_id": "7739b01e-0cea-434b-9b19-8761df409c29", "action": "accept_all", "count": 11, "type": "batch_action", "timestamp": "2026-03-10T00:27:39.832349"}
+{"session_id": "703f5707-e4ac-42dd-aeea-69b0a48db40b", "project_id": "7739b01e-0cea-434b-9b19-8761df409c29", "action": "accept_all", "count": 0, "type": "batch_action", "timestamp": "2026-03-10T00:27:49.531031"}
+{"session_id": "703f5707-e4ac-42dd-aeea-69b0a48db40b", "project_id": "703f5707-e4ac-42dd-aeea-69b0a48db40b", "action": "accept_all", "count": 0, "type": "batch_action", "timestamp": "2026-03-10T00:35:03.302464"}

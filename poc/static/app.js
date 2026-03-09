@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Global event listeners
   document.addEventListener('click', e => {
-    if (!e.target.closest('.export-wrap')) hideExportMenu();
+    if (!e.target.closest('.results-header-wrap')) hideExportMenu();
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeRenameModal(); } });
 

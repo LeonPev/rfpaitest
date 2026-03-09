@@ -312,25 +312,25 @@
 <!-- ─── SCREEN: Results ──────────────────────────────────────────────── -->
 <div id="screen-results" class="screen page hidden">
   <div class="results-main">
-    <div class="gc results-header">
-      <div class="results-header-left">
-        <div class="results-title-row">
-          <h2 class="results-title" id="results-title">מסמכים מוכנים</h2>
-          <span class="results-badge" id="results-badge">הופק ב-AI</span>
-        </div>
-        <div class="results-meta" id="results-meta"></div>
-      </div>
-      <div class="results-actions">
-        <button class="btn-glass btn-sm" onclick="showScreen('chat')">חזרה לצ'אט</button>
-        <button class="btn-success btn-sm" onclick="acceptAll()">אשר הכל</button>
-        <div class="export-wrap">
-          <button class="btn-grad btn-sm" onclick="toggleExportMenu()">ייצוא</button>
-          <div class="export-menu hidden" id="export-menu">
-            <button class="export-menu-item" onclick="exportMD()">הורד MD (כולל תוכן עניינים)</button>
-            <button class="export-menu-item" onclick="exportPDF()">הורד PDF (פורמט צה"ל)</button>
-            <button class="export-menu-item" onclick="exportJSON()">הורד JSON</button>
+    <div class="results-header-wrap">
+      <div class="gc results-header">
+        <div class="results-header-left">
+          <div class="results-title-row">
+            <h2 class="results-title" id="results-title">מסמכים מוכנים</h2>
+            <span class="results-badge" id="results-badge">הופק ב-AI</span>
           </div>
+          <div class="results-meta" id="results-meta"></div>
         </div>
+        <div class="results-actions">
+          <button class="btn-glass btn-sm" onclick="showScreen('chat')">חזרה לצ'אט</button>
+          <button class="btn-success btn-sm" onclick="acceptAll()">אשר הכל</button>
+          <button class="btn-grad btn-sm" onclick="toggleExportMenu()">ייצוא</button>
+        </div>
+      </div>
+      <div class="export-menu hidden" id="export-menu">
+        <button class="export-menu-item" onclick="exportMD()">הורד MD (כולל תוכן עניינים)</button>
+        <button class="export-menu-item" onclick="exportPDF()">הורד PDF (פורמט צה"ל)</button>
+        <button class="export-menu-item" onclick="exportJSON()">הורד JSON</button>
       </div>
     </div>
     <div class="doc-tabs-bar" id="doc-tabs-bar"></div>
