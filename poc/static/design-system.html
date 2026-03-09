@@ -1,0 +1,1939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design System — AI Procurement</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>
+/* ══════════════════════════════════════════════════════════════
+   DESIGN SYSTEM — Liquid Glass Theme
+   Light tint · Specular edges · Lens depth · Apple iOS 26
+   ══════════════════════════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Accent palette — muted, used as tints only */
+  --indigo:  #4f46e5;
+  --violet:  #7c3aed;
+  --cyan:    #0891b2;
+  --teal:    #0d9488;
+  --pink:    #db2777;
+  --emerald: #059669;
+  --amber:   #d97706;
+  --red:     #dc2626;
+
+  /* Gradient text only — never fills */
+  --grad-primary: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  --grad-warm:    linear-gradient(135deg, #7c3aed 0%, #db2777 100%);
+  --grad-teal:    linear-gradient(135deg, #0891b2 0%, #059669 100%);
+  --grad-gold:    linear-gradient(135deg, #d97706 0%, #f59e0b 100%);
+
+  /* Liquid glass surface — the core material */
+  --lgs-bg:       rgba(255,255,255,0.76);
+  --lgs-bg-deep:  rgba(255,255,255,0.88);
+  --lgs-border:   rgba(255,255,255,0.78);
+  --lgs-blur:     blur(40px) saturate(180%) brightness(1.03);
+  /* Specular shadow: top highlight line + depth shadow + outer rim */
+  --lgs-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,0.92),
+    inset 0 -0.5px 0 rgba(0,0,0,0.03),
+    0 4px 24px rgba(0,0,0,0.06),
+    0 1px 4px rgba(0,0,0,0.04),
+    0 0 0 0.5px rgba(0,0,0,0.05);
+  --lgs-shadow-hover:
+    inset 0 1.5px 0 rgba(255,255,255,0.97),
+    inset 0 -0.5px 0 rgba(0,0,0,0.04),
+    0 10px 40px rgba(0,0,0,0.09),
+    0 2px 8px rgba(0,0,0,0.05),
+    0 0 0 0.5px rgba(0,0,0,0.06);
+
+  /* Legacy compat */
+  --glass:        var(--lgs-bg);
+  --glass-mid:    rgba(255,255,255,0.82);
+  --glass-strong: var(--lgs-bg-deep);
+  --glass-border: rgba(0,0,0,0.06);
+  --glass-shadow: var(--lgs-shadow);
+  --glass-shadow-hover: var(--lgs-shadow-hover);
+
+  /* Text */
+  --t1: #111827; --t2: #374151; --t3: #6b7280; --t4: #9ca3af; --t5: #d1d5db;
+
+  --r-sm: 8px; --r-md: 12px; --r-lg: 18px; --r-xl: 24px; --r-full: 9999px;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', system-ui, sans-serif;
+  /* Very subtle pastel tint — makes liquid glass specular reads */
+  background:
+    radial-gradient(ellipse at 12% 18%, rgba(124,58,237,.07) 0%, transparent 48%),
+    radial-gradient(ellipse at 88% 82%, rgba(79,70,229,.06) 0%, transparent 48%),
+    radial-gradient(ellipse at 55% 48%, rgba(8,145,178,.04) 0%, transparent 52%),
+    #f3f4fa;
+  min-height: 100vh; color: var(--t1);
+  font-size: 14.5px; line-height: 1.6; overflow-x: hidden;
+  letter-spacing: -.01em;
+}
+
+/* ── Ambient orbs ───────────────────────────────────────── */
+.orb { position: fixed; border-radius: 50%; pointer-events: none; z-index: 0; }
+.orb-1 { width: 900px; height: 900px; top: -320px; right: -220px;
+  background: radial-gradient(circle, rgba(79,70,229,.08) 0%, transparent 60%); }
+.orb-2 { width: 700px; height: 700px; bottom: -200px; left: -180px;
+  background: radial-gradient(circle, rgba(8,145,178,.06) 0%, transparent 60%); }
+.orb-3 { width: 500px; height: 500px; top: 45%; left: 38%;
+  background: radial-gradient(circle, rgba(124,58,237,.05) 0%, transparent 60%); }
+
+/* ── Page wrapper ───────────────────────────────────────── */
+.page { position: relative; z-index: 1; }
+
+/* ── Navigation ─────────────────────────────────────────── */
+.nav {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(243,244,250,0.72);
+  backdrop-filter: blur(44px) saturate(200%) brightness(1.04);
+  -webkit-backdrop-filter: blur(44px) saturate(200%) brightness(1.04);
+  border-bottom: 0.5px solid rgba(255,255,255,0.72);
+  box-shadow:
+    inset 0 -1px 0 rgba(0,0,0,0.04),
+    0 1px 0 rgba(255,255,255,.90),
+    0 4px 20px rgba(0,0,0,0.05);
+  padding: 0 2.5rem; height: 60px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.nav-logo { display: flex; align-items: center; gap: .75rem; }
+.nav-logo-mark {
+  width: 34px; height: 34px; border-radius: 10px;
+  background: rgba(255,255,255,0.82);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 0.5px solid rgba(255,255,255,0.90);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--indigo); font-weight: 700; font-size: .95rem;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.95),
+    0 2px 10px rgba(0,0,0,.07),
+    0 0 0 .5px rgba(0,0,0,.05);
+}
+.nav-wordmark { font-size: .95rem; font-weight: 600; color: var(--t1); letter-spacing: -.02em; }
+.nav-sub { font-size: .68rem; color: var(--t4); letter-spacing: 0; }
+.nav-links { display: flex; gap: .25rem; align-items: center; }
+.nav-link {
+  padding: .35rem .8rem; border-radius: var(--r-full);
+  font-size: .84rem; font-weight: 450; color: var(--t3);
+  cursor: pointer; transition: all .16s; text-decoration: none;
+}
+.nav-link:hover { background: rgba(0,0,0,0.04); color: var(--t1); text-decoration: none; }
+
+/* Nav CTA — liquid glass pill */
+.nav-cta {
+  background: rgba(255,255,255,0.82);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  color: var(--indigo); border: 0.5px solid rgba(255,255,255,0.88);
+  padding: .42rem 1.05rem; border-radius: var(--r-full);
+  font-weight: 600; font-size: .83rem; cursor: pointer; font-family: inherit;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.95),
+    inset 0 -0.5px 0 rgba(0,0,0,.02),
+    0 2px 12px rgba(0,0,0,.07),
+    0 0 0 .5px rgba(0,0,0,.04);
+  transition: all .22s cubic-bezier(0.34,1.56,0.64,1);
+}
+.nav-cta:hover {
+  background: rgba(255,255,255,0.95);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,1),
+    inset 0 -0.5px 0 rgba(0,0,0,.03),
+    0 6px 22px rgba(0,0,0,.10),
+    0 0 0 .5px rgba(0,0,0,.05);
+  transform: translateY(-1px) scale(1.02);
+}
+
+/* ── Sidebar nav ────────────────────────────────────────── */
+.layout { display: flex; }
+.sidebar {
+  width: 210px; flex-shrink: 0; padding: 1.75rem 1rem;
+  position: sticky; top: 60px; height: calc(100vh - 60px);
+  overflow-y: auto; border-right: 1px solid rgba(0,0,0,0.05);
+}
+.sidebar-section { margin-bottom: 1.75rem; }
+.sidebar-label {
+  font-size: .67rem; font-weight: 600; text-transform: uppercase; letter-spacing: .1em;
+  color: var(--t4); padding: .2rem .5rem; margin-bottom: .5rem; display: block;
+}
+.sidebar-item {
+  display: block; padding: .36rem .65rem; border-radius: var(--r-sm);
+  font-size: .83rem; font-weight: 400; color: var(--t3); cursor: pointer;
+  transition: all .14s; text-decoration: none;
+}
+.sidebar-item:hover { background: rgba(0,0,0,0.04); color: var(--t1); text-decoration: none; }
+.sidebar-item.active {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 0.5px solid rgba(255,255,255,0.88);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.92),
+    0 2px 10px rgba(0,0,0,.06),
+    0 0 0 .5px rgba(0,0,0,.04);
+  color: var(--indigo); font-weight: 500;
+}
+
+/* ── Main content ───────────────────────────────────────── */
+.main { flex: 1; padding: 2.5rem 2.5rem 5rem; max-width: 1060px; }
+
+/* ── Section headers ────────────────────────────────────── */
+.ds-section { margin-bottom: 4rem; scroll-margin-top: 76px; }
+.ds-section-title {
+  font-size: 1.2rem; font-weight: 600; color: var(--t1);
+  display: flex; align-items: center; gap: .55rem;
+  margin-bottom: .3rem; letter-spacing: -.025em;
+}
+.ds-section-title .label-badge {
+  font-size: .63rem; font-weight: 500; padding: .18rem .55rem;
+  border-radius: var(--r-full);
+  background: rgba(0,0,0,0.05); color: var(--t3);
+  letter-spacing: .04em; text-transform: uppercase;
+}
+.ds-section-desc { font-size: .85rem; color: var(--t3); margin-bottom: 1.5rem; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 1rem; font-weight: 400; }
+
+/* ── Glass card base — liquid glass on light bg ─────────── */
+.gc {
+  background: rgba(255,255,255,0.76);
+  backdrop-filter: var(--lgs-blur);
+  -webkit-backdrop-filter: var(--lgs-blur);
+  border: 0.5px solid rgba(255,255,255,0.78);
+  border-radius: var(--r-lg);
+  box-shadow: var(--lgs-shadow);
+  transition: transform .22s, box-shadow .22s;
+  position: relative; overflow: hidden;
+}
+.gc::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  background:
+    radial-gradient(ellipse at 28% 12%, rgba(255,255,255,.50) 0%, transparent 46%),
+    linear-gradient(162deg, rgba(255,255,255,.16) 0%, rgba(255,255,255,.03) 35%, rgba(255,255,255,.09) 100%);
+  pointer-events: none; z-index: 0;
+  filter: url(#lg-refract);
+}
+.gc > * { position: relative; z-index: 1; }
+.gc:hover { transform: translateY(-3px); box-shadow: var(--lgs-shadow-hover); }
+
+/* ── Hero ───────────────────────────────────────────────── */
+.hero {
+  padding: 3rem 2.5rem;
+  background: rgba(255,255,255,0.82);
+  backdrop-filter: var(--lgs-blur);
+  -webkit-backdrop-filter: var(--lgs-blur);
+  border: 0.5px solid rgba(255,255,255,0.85);
+  border-radius: var(--r-xl);
+  box-shadow: var(--lgs-shadow);
+  margin-bottom: 3rem;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.hero::before {
+  content: ''; position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 25% 10%, rgba(255,255,255,.52) 0%, transparent 42%),
+    radial-gradient(ellipse at 75% 90%, rgba(124,58,237,.04) 0%, transparent 40%),
+    linear-gradient(162deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,.03) 40%, rgba(255,255,255,.10) 100%);
+  pointer-events: none;
+  filter: url(#lg-refract);
+}
+.hero-eyebrow {
+  font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em;
+  background: var(--grad-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: .75rem;
+}
+.hero-title {
+  font-size: 2.4rem; font-weight: 700; line-height: 1.2;
+  background: var(--grad-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: .8rem; letter-spacing: -.03em;
+}
+.hero-sub { font-size: 1rem; color: var(--t3); max-width: 480px; margin: 0 auto 1.5rem; line-height: 1.65; }
+.hero-btns { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
+
+/* ══════════════ COLOR PALETTE ══════════════ */
+.palette-grid { display: flex; gap: .6rem; flex-wrap: wrap; }
+.swatch {
+  width: 72px; display: flex; flex-direction: column; align-items: center; gap: .4rem;
+}
+.swatch-color {
+  width: 72px; height: 72px; border-radius: var(--r-md);
+  box-shadow: 0 4px 12px rgba(0,0,0,.12);
+}
+.swatch-label { font-size: .68rem; color: var(--t3); text-align: center; font-weight: 600; }
+.swatch-hex   { font-size: .62rem; color: var(--t4); font-family: monospace; }
+
+.grad-swatch {
+  height: 52px; border-radius: var(--r-md); flex: 1; min-width: 140px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .78rem; font-weight: 700; color: rgba(255,255,255,.9);
+}
+.grad-swatches { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .75rem; }
+
+/* ══════════════ TYPOGRAPHY ══════════════ */
+.type-row { margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(0,0,0,.05); }
+.type-meta { font-size: .72rem; color: var(--t4); font-family: monospace; margin-bottom: .2rem; }
+
+/* ══════════════ BUTTONS ══════════════ */
+.btn-row { display: flex; gap: .75rem; flex-wrap: wrap; align-items: center; margin-bottom: 1.25rem; }
+.btn-label-row { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--t4); margin-bottom: .5rem; }
+
+/* ── Shared liquid glass button base ──────────────────── */
+.btn-grad, .btn-warm, .btn-teal, .btn-glass, .btn-danger, .btn-success {
+  background: rgba(255,255,255,0.80);
+  backdrop-filter: blur(28px) saturate(180%) brightness(1.03);
+  -webkit-backdrop-filter: blur(28px) saturate(180%) brightness(1.03);
+  border: 0.5px solid rgba(255,255,255,0.85);
+  border-radius: var(--r-full);
+  font-weight: 500; font-size: .88rem; font-family: inherit;
+  cursor: pointer; padding: .6rem 1.4rem;
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.95),
+    inset 0 -0.5px 0 rgba(0,0,0,.025),
+    0 3px 14px rgba(0,0,0,.06),
+    0 1px 3px rgba(0,0,0,.04),
+    0 0 0 .5px rgba(0,0,0,.045);
+  transition: transform .22s cubic-bezier(0.34,1.56,0.64,1), box-shadow .2s;
+  position: relative; overflow: hidden;
+}
+/* Lens overlay on buttons */
+.btn-grad::before, .btn-warm::before, .btn-teal::before,
+.btn-glass::before, .btn-danger::before, .btn-success::before {
+  content: ''; position: absolute; inset: 0; border-radius: inherit;
+  background:
+    radial-gradient(ellipse at 30% 15%, rgba(255,255,255,.55) 0%, transparent 48%),
+    linear-gradient(162deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,.02) 45%, rgba(255,255,255,.08) 100%);
+  pointer-events: none; filter: url(#lg-refract);
+}
+/* Hover: lift + stronger specular */
+.btn-grad:hover, .btn-warm:hover, .btn-teal:hover,
+.btn-glass:hover, .btn-danger:hover, .btn-success:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,1),
+    inset 0 -0.5px 0 rgba(0,0,0,.03),
+    0 8px 28px rgba(0,0,0,.09),
+    0 2px 6px rgba(0,0,0,.05),
+    0 0 0 .5px rgba(0,0,0,.05);
+}
+.btn-grad:active, .btn-warm:active, .btn-teal:active,
+.btn-glass:active, .btn-danger:active, .btn-success:active {
+  transform: scale(0.975); transition-duration: .1s;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.7), inset 0 1px 8px rgba(0,0,0,.07), 0 1px 4px rgba(0,0,0,.06);
+}
+
+/* Tint via text color only */
+.btn-grad    { color: var(--indigo); }
+.btn-warm    { color: var(--violet); }
+.btn-teal    { color: var(--cyan); }
+.btn-glass   { color: var(--t2); }
+.btn-danger  { color: var(--red); }
+.btn-success { color: var(--emerald); }
+
+/* Glass outline */
+.btn-outline {
+  background: rgba(255,255,255,0.55);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(79,70,229,.22);
+  color: var(--indigo); padding: .6rem 1.4rem;
+  border-radius: var(--r-full); font-weight: 500; font-size: .88rem;
+  cursor: pointer; font-family: inherit;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.85), 0 2px 8px rgba(0,0,0,.04);
+  transition: all .2s;
+}
+.btn-outline:hover {
+  background: rgba(255,255,255,.80);
+  border-color: rgba(79,70,229,.35);
+  box-shadow: inset 0 1.5px 0 rgba(255,255,255,.95), 0 4px 14px rgba(79,70,229,.08);
+  transform: translateY(-1px);
+}
+
+/* Ghost */
+.btn-ghost {
+  background: none; border: none;
+  color: var(--t3); padding: .6rem 1.1rem;
+  border-radius: var(--r-full); font-weight: 500; font-size: .88rem;
+  cursor: pointer; font-family: inherit;
+  transition: all .18s;
+}
+.btn-ghost:hover {
+  background: rgba(255,255,255,.72);
+  backdrop-filter: blur(16px);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.90), 0 2px 8px rgba(0,0,0,.05);
+  color: var(--t2);
+}
+
+/* Icon button */
+.btn-icon {
+  width: 40px; height: 40px; padding: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: 50%; font-size: 1rem;
+}
+
+/* Sizes */
+.btn-sm { padding: .38rem .9rem; font-size: .78rem; }
+.btn-lg { padding: .75rem 1.8rem; font-size: 1rem; }
+.btn-xl { padding: .95rem 2.2rem; font-size: 1.05rem; }
+
+/* ══════════════ FORMS ══════════════ */
+.form-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.form-group { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: .35rem; }
+.form-label { font-size: .8rem; font-weight: 700; color: var(--t2); }
+
+.inp {
+  width: 100%; padding: .65rem 1rem; border-radius: var(--r-md);
+  border: 0.5px solid rgba(255,255,255,.80);
+  background: rgba(255,255,255,.76);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  font-size: .88rem; font-family: inherit; color: var(--t1);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.90),
+    inset 0 -0.5px 0 rgba(0,0,0,.025),
+    0 2px 10px rgba(0,0,0,.05),
+    0 0 0 .5px rgba(0,0,0,.04);
+  transition: box-shadow .18s, background .18s;
+}
+.inp::placeholder { color: var(--t4); }
+.inp:focus {
+  outline: none;
+  background: rgba(255,255,255,.92);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.98),
+    inset 0 -0.5px 0 rgba(0,0,0,.03),
+    0 0 0 3px rgba(79,70,229,.10),
+    0 3px 14px rgba(0,0,0,.07),
+    0 0 0 .5px rgba(79,70,229,.25);
+}
+
+.inp-glass {
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 0.5px solid rgba(255,255,255,.88);
+  box-shadow: inset 0 1.5px 0 rgba(255,255,255,.95), 0 2px 10px rgba(0,0,0,.05), 0 0 0 .5px rgba(0,0,0,.04);
+}
+
+.inp-error { border-color: rgba(239,68,68,.5); }
+.inp-error:focus { border-color: var(--red); box-shadow: 0 0 0 3.5px rgba(239,68,68,.12); }
+
+.form-hint { font-size: .75rem; color: var(--t4); }
+.form-error-msg { font-size: .75rem; color: var(--red); }
+
+.select-wrap { position: relative; }
+.select-wrap select {
+  appearance: none; width: 100%;
+  padding: .65rem 2rem .65rem 1rem;
+  border-radius: var(--r-md);
+  border: 0.5px solid rgba(255,255,255,.80);
+  background: rgba(255,255,255,.76);
+  backdrop-filter: blur(28px) saturate(180%);
+  font-size: .88rem; font-family: inherit; color: var(--t1); cursor: pointer;
+}
+.select-wrap::after {
+  content: '▾'; position: absolute; left: .8rem; top: 50%;
+  transform: translateY(-50%); color: var(--t4); pointer-events: none;
+  font-size: .75rem;
+}
+
+/* Chips */
+.chip-row { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .75rem; }
+.chip {
+  padding: .3rem .85rem; border-radius: var(--r-full);
+  border: 0.5px solid rgba(255,255,255,.75);
+  background: rgba(255,255,255,.68);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  color: var(--t3); font-size: .8rem; font-weight: 500;
+  cursor: pointer; font-family: inherit;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.80), 0 1px 4px rgba(0,0,0,.04), 0 0 0 .5px rgba(0,0,0,.04);
+  transition: all .2s cubic-bezier(0.34,1.56,0.64,1);
+}
+.chip:hover {
+  background: rgba(255,255,255,.88);
+  border-color: rgba(255,255,255,.92);
+  color: var(--indigo);
+  box-shadow: inset 0 1.5px 0 rgba(255,255,255,.95), 0 3px 10px rgba(0,0,0,.06), 0 0 0 .5px rgba(79,70,229,.12);
+  transform: translateY(-1px);
+}
+.chip.active {
+  background: rgba(255,255,255,.90);
+  border: 0.5px solid rgba(255,255,255,.92);
+  color: var(--indigo);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.97),
+    inset 0 -0.5px 0 rgba(0,0,0,.025),
+    0 3px 12px rgba(0,0,0,.07),
+    0 0 0 .5px rgba(79,70,229,.15);
+}
+.chip.chip-green.active  { color: var(--emerald); border-color: rgba(5,150,105,0.28); }
+.chip.chip-amber.active  { color: var(--amber);   border-color: rgba(217,119,6,0.28); }
+.chip.chip-pink.active   { color: var(--pink);    border-color: rgba(219,39,119,0.28); }
+
+/* Toggle */
+.toggle-wrap { display: flex; align-items: center; gap: .6rem; }
+.toggle {
+  position: relative; width: 42px; height: 24px;
+}
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-track {
+  position: absolute; inset: 0; cursor: pointer;
+  background: rgba(0,0,0,.1); border-radius: var(--r-full);
+  border: 1px solid rgba(0,0,0,.08);
+  transition: background .2s;
+}
+.toggle input:checked ~ .toggle-track {
+  background: rgba(79,70,229,0.75);
+  border-color: rgba(79,70,229,0.5);
+  box-shadow: 0 1px 6px rgba(79,70,229,.18);
+}
+.toggle-thumb {
+  position: absolute; top: 2px; right: 2px; width: 18px; height: 18px;
+  background: #fff; border-radius: 50%;
+  box-shadow: 0 1px 4px rgba(0,0,0,.2);
+  transition: right .2s;
+  pointer-events: none;
+}
+.toggle input:checked ~ .toggle-track .toggle-thumb { right: calc(100% - 20px); }
+.toggle-label { font-size: .85rem; font-weight: 600; color: var(--t2); }
+
+/* ══════════════ METRICS / STAT CARDS ══════════════ */
+.metrics-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr)); gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.metric-card {
+  background: rgba(255,255,255,0.78);
+  backdrop-filter: var(--lgs-blur);
+  -webkit-backdrop-filter: var(--lgs-blur);
+  border: 0.5px solid rgba(255,255,255,0.82);
+  border-radius: var(--r-lg);
+  padding: 1.4rem 1.6rem;
+  box-shadow: var(--lgs-shadow);
+  transition: transform .22s, box-shadow .22s;
+  position: relative; overflow: hidden;
+}
+.metric-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+}
+.metric-card.mc-indigo::before { background: var(--grad-primary); }
+.metric-card.mc-teal::before   { background: var(--grad-teal); }
+.metric-card.mc-warm::before   { background: var(--grad-warm); }
+.metric-card.mc-gold::before   { background: var(--grad-gold); }
+.metric-card:hover { transform: translateY(-4px); box-shadow: var(--glass-shadow-hover); }
+
+.mc-icon {
+  width: 40px; height: 40px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; margin-bottom: .75rem;
+}
+.mc-icon.ic-indigo { background: rgba(79,70,229,.09); }
+.mc-icon.ic-teal   { background: rgba(8,145,178,.09); }
+.mc-icon.ic-warm   { background: rgba(124,58,237,.09); }
+.mc-icon.ic-gold   { background: rgba(217,119,6,.09); }
+
+.mc-value {
+  font-size: 2.1rem; font-weight: 800; line-height: 1; margin-bottom: .25rem;
+}
+.mc-value.grad-text-indigo { background: var(--grad-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.mc-value.grad-text-teal   { background: var(--grad-teal);    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.mc-value.grad-text-warm   { background: var(--grad-warm);    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.mc-value.grad-text-gold   { background: var(--grad-gold);    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+.mc-label { font-size: .8rem; color: var(--t3); font-weight: 500; margin-bottom: .5rem; }
+.mc-trend {
+  display: inline-flex; align-items: center; gap: .25rem;
+  font-size: .75rem; font-weight: 700; padding: .18rem .55rem;
+  border-radius: var(--r-full);
+}
+.mc-trend.up   { background: rgba(5,150,105,.08);  color: #059669; }
+.mc-trend.down { background: rgba(239,68,68,.1);   color: var(--red); }
+.mc-trend.flat { background: rgba(107,114,128,.1); color: var(--t3); }
+
+/* ══════════════ CHARTS ══════════════ */
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.charts-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.chart-card {
+  background: rgba(255,255,255,0.78);
+  backdrop-filter: var(--lgs-blur);
+  -webkit-backdrop-filter: var(--lgs-blur);
+  border: 0.5px solid rgba(255,255,255,0.82);
+  border-radius: var(--r-lg);
+  padding: 1.4rem 1.5rem;
+  box-shadow: var(--lgs-shadow);
+  position: relative; overflow: hidden;
+}
+.chart-title { font-size: .9rem; font-weight: 700; color: var(--t1); margin-bottom: .25rem; }
+.chart-sub   { font-size: .76rem; color: var(--t3); margin-bottom: 1rem; }
+.chart-wrap  { position: relative; height: 180px; }
+.chart-wrap-sm { height: 140px; }
+
+/* KPI line */
+.kpi-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: .75rem; }
+.kpi-item { flex: 1; min-width: 70px; }
+.kpi-val  { font-size: 1.1rem; font-weight: 800; color: var(--t1); }
+.kpi-lbl  { font-size: .7rem; color: var(--t4); }
+
+/* ══════════════ PROGRESS BARS ══════════════ */
+.progress-group { display: flex; flex-direction: column; gap: .85rem; }
+.progress-item { }
+.progress-header { display: flex; justify-content: space-between; margin-bottom: .35rem; }
+.progress-name  { font-size: .82rem; font-weight: 600; color: var(--t2); }
+.progress-pct   { font-size: .78rem; font-weight: 700; color: var(--t3); }
+.progress-track {
+  height: 7px; border-radius: var(--r-full);
+  background: linear-gradient(90deg, rgba(79,70,229,.12) 0%, rgba(124,58,237,.10) 50%, rgba(219,39,119,.08) 100%);
+  overflow: hidden;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,.05);
+}
+.progress-fill {
+  height: 100%; border-radius: var(--r-full);
+  background: linear-gradient(90deg, rgba(79,70,229,.9) 0%, rgba(124,58,237,.85) 100%);
+  transition: width .6s ease;
+  box-shadow: 0 0 8px rgba(79,70,229,.4);
+}
+.progress-fill.green { background: linear-gradient(90deg, rgba(8,145,178,.9) 0%, rgba(5,150,105,.85) 100%); box-shadow: 0 0 8px rgba(8,145,178,.4); }
+.progress-fill.warm  { background: linear-gradient(90deg, rgba(124,58,237,.9) 0%, rgba(219,39,119,.85) 100%); box-shadow: 0 0 8px rgba(219,39,119,.4); }
+.progress-fill.gold  { background: linear-gradient(90deg, rgba(217,119,6,.9) 0%, rgba(245,158,11,.85) 100%); box-shadow: 0 0 8px rgba(217,119,6,.4); }
+
+/* ══════════════ BADGES & PILLS ══════════════ */
+.badge-wrap { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: .75rem; }
+.badge {
+  display: inline-flex; align-items: center; gap: .3rem;
+  padding: .2rem .65rem; border-radius: var(--r-full);
+  font-size: .74rem; font-weight: 700;
+}
+.badge-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+.badge.b-indigo { background: rgba(79,70,229,.08);   color: var(--indigo); }
+.badge.b-violet { background: rgba(124,58,237,.08);  color: var(--violet); }
+.badge.b-cyan   { background: rgba(8,145,178,.08);   color: var(--cyan); }
+.badge.b-green  { background: rgba(5,150,105,.08);   color: var(--emerald); }
+.badge.b-amber  { background: rgba(217,119,6,.08);   color: var(--amber); }
+.badge.b-red    { background: rgba(220,38,38,.08);   color: var(--red); }
+.badge.b-pink   { background: rgba(219,39,119,.08);  color: var(--pink); }
+.badge.b-gray   { background: rgba(107,114,128,.07); color: var(--t3); }
+
+.badge.b-grad-indigo { background: rgba(79,70,229,.1);  color: var(--indigo);  border: 1px solid rgba(79,70,229,.18); }
+.badge.b-grad-teal   { background: rgba(8,145,178,.1);  color: var(--cyan);    border: 1px solid rgba(8,145,178,.18); }
+.badge.b-grad-warm   { background: rgba(124,58,237,.1); color: var(--violet);  border: 1px solid rgba(124,58,237,.18); }
+
+/* Numeric score badges */
+.score-badge {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: .82rem; font-weight: 800;
+}
+.score-5 { background: rgba(5,150,105,.09);   color: #059669; border: 1px solid rgba(5,150,105,.2); }
+.score-4 { background: rgba(132,204,22,.09);  color: #65a30d; border: 1px solid rgba(132,204,22,.2); }
+.score-3 { background: rgba(217,119,6,.09);   color: var(--amber); border: 1px solid rgba(217,119,6,.2); }
+.score-2 { background: rgba(249,115,22,.09);  color: #ea580c; border: 1px solid rgba(249,115,22,.2); }
+.score-1 { background: rgba(220,38,38,.09);   color: var(--red); border: 1px solid rgba(220,38,38,.2); }
+
+/* ══════════════ CARDS ══════════════ */
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 1rem; }
+
+.doc-card {
+  background: rgba(255,255,255,0.78);
+  backdrop-filter: var(--lgs-blur);
+  -webkit-backdrop-filter: var(--lgs-blur);
+  border: 0.5px solid rgba(255,255,255,0.82);
+  border-radius: var(--r-lg);
+  padding: 1.1rem 1.25rem;
+  box-shadow: var(--lgs-shadow);
+  border-right: 3px solid;
+  cursor: pointer;
+  transition: transform .22s, box-shadow .22s;
+  display: flex; flex-direction: column; gap: .5rem;
+  position: relative; overflow: hidden;
+}
+.doc-card:hover { transform: translateY(-3px); box-shadow: var(--lgs-shadow-hover); }
+.doc-card-green  { border-right-color: var(--emerald); }
+.doc-card-yellow { border-right-color: #84cc16; }
+.doc-card-amber  { border-right-color: var(--amber); }
+.doc-card-red    { border-right-color: var(--red); }
+
+.dc-header { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; }
+.dc-name   { font-size: .88rem; font-weight: 700; color: var(--t1); flex: 1; line-height: 1.3; }
+.dc-tags   { display: flex; flex-wrap: wrap; gap: .3rem; }
+.dc-desc   { font-size: .78rem; color: var(--t3); line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.dc-footer { display: flex; align-items: center; justify-content: space-between; padding-top: .5rem; border-top: 1px solid rgba(0,0,0,.06); margin-top: auto; }
+.dc-meta   { font-size: .72rem; color: var(--t4); }
+
+/* ══════════════ AGENT PANEL ══════════════ */
+.agent-panel {
+  background: rgba(255,255,255,0.72);
+  backdrop-filter: var(--lgs-blur);
+  -webkit-backdrop-filter: var(--lgs-blur);
+  border: 0.5px solid rgba(255,255,255,0.80);
+  border-radius: var(--r-xl);
+  box-shadow: var(--lgs-shadow);
+  overflow: hidden;
+  position: relative;
+}
+.agent-row {
+  display: flex; align-items: center; gap: 1rem;
+  padding: .95rem 1.4rem; border-bottom: 1px solid rgba(0,0,0,.05);
+  transition: background .2s;
+}
+.agent-row:last-child { border-bottom: none; }
+.agent-row.a-active { background: rgba(79,70,229,.04); }
+.agent-row.a-done   { background: rgba(5,150,105,.03); }
+.agent-row.a-wait   { opacity: .6; }
+.agent-icon-wrap {
+  width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 1.15rem;
+}
+.ai-indigo { background: rgba(79,70,229,.09); }
+.ai-green  { background: rgba(5,150,105,.09); }
+.ai-amber  { background: rgba(217,119,6,.09); }
+.ai-cyan   { background: rgba(8,145,178,.09); }
+.agent-info { flex: 1; }
+.agent-name { font-size: .88rem; font-weight: 700; color: var(--t1); }
+.agent-msg  { font-size: .78rem; color: var(--t3); margin-top: .1rem; }
+.agent-status-icon { font-size: 1.1rem; }
+
+.spinner {
+  display: inline-block; width: 18px; height: 18px;
+  border: 1.5px solid rgba(79,70,229,.15); border-top-color: var(--indigo);
+  border-radius: 50%; animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ══════════════ MODAL PREVIEW ══════════════ */
+.modal-preview {
+  background: rgba(255,255,255,0.86);
+  backdrop-filter: blur(52px) saturate(200%) brightness(1.04);
+  -webkit-backdrop-filter: blur(52px) saturate(200%) brightness(1.04);
+  border: 0.5px solid rgba(255,255,255,0.88);
+  border-radius: var(--r-xl);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.96),
+    inset 0 -0.5px 0 rgba(0,0,0,.03),
+    0 20px 56px rgba(0,0,0,.12),
+    0 4px 16px rgba(0,0,0,.07),
+    0 0 0 .5px rgba(0,0,0,.05);
+  overflow: hidden; max-width: 600px;
+}
+.modal-header {
+  padding: 1.2rem 1.5rem;
+  background: rgba(0,0,0,.02);
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-size: 1rem; font-weight: 700; color: var(--t1); }
+.modal-close-btn {
+  width: 30px; height: 30px; border-radius: 50%; background: rgba(0,0,0,.06);
+  border: none; font-size: .9rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--t3); transition: all .2s;
+}
+.modal-close-btn:hover { background: rgba(239,68,68,.1); color: var(--red); }
+.modal-tabs-bar {
+  display: flex; padding: 0 1rem;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+  background: rgba(255,255,255,.5);
+}
+.modal-tab {
+  padding: .6rem .9rem; border: none; background: none;
+  font-size: .82rem; font-weight: 600; color: var(--t3); cursor: pointer;
+  border-bottom: 2px solid transparent; transition: all .18s; font-family: inherit;
+}
+.modal-tab:hover { color: var(--indigo); }
+.modal-tab.active { color: var(--indigo); border-bottom-color: var(--indigo); }
+.modal-body { padding: 1.25rem 1.5rem; }
+
+/* ══════════════ UPLOAD ZONE ══════════════ */
+.upload-zone {
+  border: 1px dashed rgba(255,255,255,.60);
+  border-radius: var(--r-lg);
+  padding: 2.5rem; text-align: center; cursor: pointer;
+  background: rgba(255,255,255,0.62);
+  backdrop-filter: blur(28px) saturate(170%);
+  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.80),
+    0 2px 12px rgba(0,0,0,.05),
+    0 0 0 .5px rgba(0,0,0,.04);
+  transition: all .25s;
+}
+.upload-zone:hover {
+  border-color: rgba(79,70,229,.25);
+  background: rgba(255,255,255,.82);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.94),
+    0 4px 20px rgba(0,0,0,.07),
+    0 0 0 .5px rgba(79,70,229,.10);
+}
+.upload-zone .upload-icon { font-size: 2.5rem; margin-bottom: .65rem; opacity: .7; }
+.upload-zone .upload-title { font-weight: 700; color: var(--t1); margin-bottom: .25rem; }
+.upload-zone .upload-hint  { font-size: .78rem; color: var(--t4); }
+
+/* ══════════════ TABLE ══════════════ */
+.glass-table {
+  width: 100%; border-collapse: collapse;
+  background: rgba(255,255,255,.74);
+  backdrop-filter: var(--lgs-blur);
+  -webkit-backdrop-filter: var(--lgs-blur);
+  border-radius: var(--r-lg); overflow: hidden;
+  box-shadow: var(--lgs-shadow);
+}
+.glass-table th {
+  background: rgba(249,250,252,0.92);
+  color: var(--t2);
+  padding: .65rem 1rem; text-align: right; font-size: .78rem; font-weight: 600;
+  border-bottom: 1px solid rgba(0,0,0,0.07); letter-spacing: .01em;
+}
+.glass-table td { padding: .6rem 1rem; font-size: .84rem; color: var(--t2); border-bottom: 1px solid rgba(0,0,0,.05); }
+.glass-table tr:last-child td { border-bottom: none; }
+.glass-table tr:hover td { background: rgba(0,0,0,.02); }
+
+/* ══════════════ NOTIFICATION TOASTS ══════════════ */
+.toast-stack { display: flex; flex-direction: column; gap: .65rem; }
+.toast {
+  display: flex; align-items: flex-start; gap: .75rem;
+  padding: .9rem 1.1rem; border-radius: var(--r-lg);
+  background: rgba(255,255,255,0.84);
+  backdrop-filter: blur(44px) saturate(190%) brightness(1.04);
+  -webkit-backdrop-filter: blur(44px) saturate(190%) brightness(1.04);
+  border: 0.5px solid rgba(255,255,255,0.88);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,.96),
+    inset 0 -0.5px 0 rgba(0,0,0,.025),
+    0 8px 32px rgba(0,0,0,.10),
+    0 2px 8px rgba(0,0,0,.06),
+    0 0 0 .5px rgba(0,0,0,.05);
+  max-width: 380px;
+}
+.toast-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: .1rem; }
+.toast-content { flex: 1; }
+.toast-title { font-size: .85rem; font-weight: 700; color: var(--t1); margin-bottom: .15rem; }
+.toast-msg   { font-size: .78rem; color: var(--t3); line-height: 1.5; }
+.toast.t-success { border-left: 3px solid var(--emerald); }
+.toast.t-warning { border-left: 3px solid var(--amber); }
+.toast.t-error   { border-left: 3px solid var(--red); }
+.toast.t-info    { border-left: 3px solid var(--indigo); }
+
+/* ══════════════ MISC ══════════════ */
+.divider {
+  height: 1px; background: linear-gradient(90deg, transparent, rgba(0,0,0,.08), transparent);
+  margin: 2rem 0;
+}
+
+.tag-cloud { display: flex; flex-wrap: wrap; gap: .4rem; }
+.tag {
+  padding: .22rem .65rem; border-radius: var(--r-full);
+  font-size: .75rem; font-weight: 500;
+  background: rgba(255,255,255,.72);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 0.5px solid rgba(255,255,255,.80);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.88), 0 1px 4px rgba(0,0,0,.04), 0 0 0 .5px rgba(0,0,0,.04);
+  color: var(--t3);
+}
+
+.avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .9rem; color: #fff; flex-shrink: 0; }
+.avatar-indigo { background: rgba(79,70,229,.75); }
+.avatar-teal   { background: rgba(8,145,178,.75); }
+.avatar-warm   { background: rgba(124,58,237,.75); }
+.avatar-stack  { display: flex; }
+.avatar-stack .avatar { border: 2px solid rgba(255,255,255,.9); margin-left: -10px; }
+.avatar-stack .avatar:first-child { margin-left: 0; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,.12); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,.22); }
+::selection { background: rgba(79,70,229,.15); }
+
+/* two-col row */
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+@media (max-width: 700px) { .two-col, .three-col, .charts-grid { grid-template-columns: 1fr; } .sidebar { display: none; } }
+
+/* ══════════════════════════════════════════════════════════
+   LIQUID GLASS — Apple iOS 26 / macOS 26 Material
+   Ultra-blur · Specular edge · Lens depth · Displacement
+   ══════════════════════════════════════════════════════════ */
+
+/* Demo stage: vivid gradient backgrounds so the glass reads */
+.lg-stage {
+  border-radius: var(--r-xl); padding: 2.5rem 2rem;
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+  gap: 1.25rem; flex-wrap: wrap; min-height: 200px;
+  margin-bottom: 1.25rem;
+}
+.lg-stage-a { background: linear-gradient(145deg,#667eea 0%,#764ba2 35%,#f093fb 65%,#4facfe 100%); }
+.lg-stage-b { background: linear-gradient(145deg,#0f0c29 0%,#302b63 40%,#24243e 100%); }
+.lg-stage-c { background: linear-gradient(145deg,#fc466b 0%,#3f5efb 100%); }
+.lg-stage-d { background: linear-gradient(145deg,#11998e 0%,#38ef7d 100%); }
+.lg-stage-label {
+  position: absolute; top: .85rem; right: 1.25rem;
+  font-size: .6rem; font-weight: 700; text-transform: uppercase; letter-spacing: .09em;
+  color: rgba(255,255,255,.45);
+}
+
+/* ── Core liquid glass material ────────────────────────── */
+.lg {
+  position: relative;
+  background: rgba(255,255,255,0.09);
+  backdrop-filter: blur(44px) saturate(190%) brightness(1.12);
+  -webkit-backdrop-filter: blur(44px) saturate(190%) brightness(1.12);
+  border-radius: 20px;
+  border: 0.5px solid rgba(255,255,255,0.20);
+  box-shadow:
+    /* ▲ Top specular line — the signature Apple glass detail */
+    inset 0 1.5px 0 rgba(255,255,255,0.88),
+    /* Left edge glow */
+    inset 1px 0 0 rgba(255,255,255,0.12),
+    /* Right edge shadow */
+    inset -0.5px 0 0 rgba(0,0,0,0.04),
+    /* Bottom inner shadow */
+    inset 0 -1px 0 rgba(0,0,0,0.06),
+    /* Drop shadow */
+    0 8px 40px rgba(0,0,0,0.22),
+    0 2px 10px rgba(0,0,0,0.12),
+    /* Outer rim */
+    0 0 0 0.5px rgba(255,255,255,0.10);
+  overflow: hidden;
+  transition: background .22s, box-shadow .25s, transform .28s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+/* Lens gradient — asymmetric radial creates 3D refractive depth */
+.lg::before {
+  content: '';
+  position: absolute; inset: 0; border-radius: inherit;
+  background:
+    radial-gradient(ellipse at 30% 16%, rgba(255,255,255,0.28) 0%, transparent 50%),
+    linear-gradient(162deg,
+      rgba(255,255,255,0.16) 0%,
+      rgba(255,255,255,0.03) 32%,
+      rgba(255,255,255,0.07) 68%,
+      rgba(255,255,255,0.12) 100%
+    );
+  pointer-events: none; z-index: 0;
+  /* Displacement filter makes the lens overlay warp slightly — like real glass */
+  filter: url(#lg-refract);
+}
+
+/* Inner rim — adds thickness/depth */
+.lg::after {
+  content: '';
+  position: absolute; inset: 0; border-radius: inherit;
+  box-shadow: inset 0 0 0 0.5px rgba(255,255,255,0.28);
+  pointer-events: none; z-index: 2;
+}
+
+.lg > * { position: relative; z-index: 1; }
+
+/* ── Interactive state ─────────────────────────────────── */
+.lg-i { cursor: pointer; }
+.lg-i:hover {
+  background: rgba(255,255,255,0.14);
+  transform: translateY(-3px) scale(1.01);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255,255,255,0.95),
+    inset 1px 0 0 rgba(255,255,255,0.20),
+    inset -0.5px 0 0 rgba(0,0,0,0.04),
+    inset 0 -1px 0 rgba(0,0,0,0.07),
+    0 20px 56px rgba(0,0,0,0.28),
+    0 4px 16px rgba(0,0,0,0.15),
+    0 0 0 0.5px rgba(255,255,255,0.20);
+}
+.lg-i:active {
+  transform: scale(0.975);
+  background: rgba(255,255,255,0.06);
+  transition-duration: .1s;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.60),
+    inset 0 1px 8px rgba(0,0,0,0.10),
+    0 2px 12px rgba(0,0,0,0.15);
+}
+
+/* ── Pill / button ─────────────────────────────────────── */
+.lg-pill {
+  padding: .52rem 1.25rem;
+  border: none; font-family: inherit; font-size: .86rem; font-weight: 500;
+  letter-spacing: -.012em; color: rgba(255,255,255,0.90);
+  border-radius: 999px; display: inline-flex; align-items: center; gap: .4rem;
+}
+
+/* ── Metric card ───────────────────────────────────────── */
+.lg-card { padding: 1.4rem 1.6rem; min-width: 150px; }
+.lg-card-label { font-size: .72rem; font-weight: 500; color: rgba(255,255,255,.52); margin-bottom: .3rem; }
+.lg-card-val { font-size: 2.2rem; font-weight: 700; color: rgba(255,255,255,.95); line-height: 1; letter-spacing: -.04em; }
+.lg-card-trend { font-size: .72rem; color: rgba(255,255,255,.50); margin-top: .25rem; }
+
+/* ── Panel ─────────────────────────────────────────────── */
+.lg-panel { padding: 1.75rem 2rem; max-width: 320px; width: 100%; }
+.lg-panel-title { font-size: .95rem; font-weight: 600; color: rgba(255,255,255,.92); margin-bottom: .45rem; letter-spacing: -.02em; }
+.lg-panel-body  { font-size: .81rem; color: rgba(255,255,255,.58); line-height: 1.65; margin-bottom: 1.1rem; }
+.lg-pill-row    { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+/* ── Floating nav bar ──────────────────────────────────── */
+.lg-nav {
+  padding: .32rem .45rem;
+  display: flex; align-items: center; gap: .15rem;
+  border-radius: 999px;
+}
+.lg-nav-item {
+  padding: .32rem .85rem; border-radius: 999px; border: none;
+  font-size: .8rem; font-weight: 500; font-family: inherit;
+  color: rgba(255,255,255,0.58); cursor: pointer; background: none;
+  transition: all .18s;
+}
+.lg-nav-item:hover { color: rgba(255,255,255,0.88); background: rgba(255,255,255,0.09); }
+.lg-nav-item.lg-active {
+  color: rgba(255,255,255,0.95);
+  background: rgba(255,255,255,0.14);
+  box-shadow: inset 0 0.5px 0 rgba(255,255,255,0.6), 0 1px 4px rgba(0,0,0,0.12);
+}
+
+/* ── Jelly press keyframe ──────────────────────────────── */
+@keyframes lg-jelly {
+  0%   { border-radius: 20px; }
+  28%  { border-radius: 26px 14px 26px 14px / 14px 26px 14px 26px; }
+  56%  { border-radius: 14px 26px 14px 26px / 26px 14px 26px 14px; }
+  80%  { border-radius: 22px 18px 22px 18px; }
+  100% { border-radius: 20px; }
+}
+/* Apply on press for pill/card shapes */
+.lg-i.lg-jelly:active { animation: lg-jelly .42s cubic-bezier(0.34,1.56,0.64,1); }
+</style>
+</head>
+<body>
+
+<!-- SVG filter defs — Liquid Glass refraction displacement -->
+<svg style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true">
+  <defs>
+    <filter id="lg-refract" x="-15%" y="-15%" width="130%" height="130%">
+      <!-- Fractal noise drives the lens warp texture -->
+      <feTurbulence type="fractalNoise" baseFrequency="0.018 0.026" numOctaves="2" seed="9" result="noise"/>
+      <!-- Displace the lens overlay: creates the bent-glass refraction look -->
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="6" xChannelSelector="R" yChannelSelector="G" result="warped"/>
+      <!-- Clip displaced result back to original bounds -->
+      <feComposite in="warped" in2="SourceGraphic" operator="atop"/>
+    </filter>
+  </defs>
+</svg>
+
+<!-- Ambient orbs -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<div class="page">
+
+<!-- ── Navigation ───────────────────────────────────────── -->
+<nav class="nav">
+  <div class="nav-logo">
+    <div class="nav-logo-mark">✦</div>
+    <div>
+      <div class="nav-wordmark">AI Procurement</div>
+      <div class="nav-sub">Design System v1.0</div>
+    </div>
+  </div>
+  <div class="nav-links">
+    <a href="#liquid-glass" class="nav-link" style="color:var(--indigo);font-weight:500">✦ Liquid Glass</a>
+    <a href="#colors"    class="nav-link">Colors</a>
+    <a href="#buttons"   class="nav-link">Buttons</a>
+    <a href="#metrics"   class="nav-link">Metrics</a>
+    <a href="#charts"    class="nav-link">Charts</a>
+    <a href="#cards"     class="nav-link">Cards</a>
+    <a href="#patterns"  class="nav-link">Patterns</a>
+    <button class="nav-cta">✦ New SOW</button>
+  </div>
+</nav>
+
+<div class="layout">
+
+<!-- ── Sidebar ──────────────────────────────────────────── -->
+<aside class="sidebar">
+  <div class="sidebar-section">
+    <div class="sidebar-label">✦ New</div>
+    <a href="#liquid-glass" class="sidebar-item" style="color:var(--indigo);font-weight:500">Liquid Glass</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Foundation</div>
+    <a href="#colors"     class="sidebar-item active">Color Palette</a>
+    <a href="#typography" class="sidebar-item">Typography</a>
+    <a href="#spacing"    class="sidebar-item">Spacing</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Components</div>
+    <a href="#buttons"  class="sidebar-item">Buttons</a>
+    <a href="#forms"    class="sidebar-item">Forms & Inputs</a>
+    <a href="#badges"   class="sidebar-item">Badges & Pills</a>
+    <a href="#cards"    class="sidebar-item">Cards</a>
+    <a href="#modal"    class="sidebar-item">Modal</a>
+    <a href="#toasts"   class="sidebar-item">Notifications</a>
+    <a href="#table"    class="sidebar-item">Table</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Data Viz</div>
+    <a href="#metrics"  class="sidebar-item">Metrics</a>
+    <a href="#charts"   class="sidebar-item">Charts</a>
+    <a href="#progress" class="sidebar-item">Progress</a>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-label">Patterns</div>
+    <a href="#patterns" class="sidebar-item">Agent Panel</a>
+    <a href="#upload"   class="sidebar-item">Upload Zone</a>
+  </div>
+</aside>
+
+<!-- ── Main ─────────────────────────────────────────────── -->
+<main class="main">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">AI Procurement · Design System</div>
+    <h1 class="hero-title">Liquid Glass</h1>
+    <p class="hero-sub">Ultra-blur · Specular edge · Lens depth</p>
+    <div class="hero-btns">
+      <button class="btn-grad btn-xl">✦ New SOW</button>
+      <button class="btn-glass btn-xl">Docs</button>
+      <button class="btn-outline btn-xl">GitHub ↗</button>
+    </div>
+  </div>
+
+  <!-- ══ LIQUID GLASS ════════════════════════════════════ -->
+  <section class="ds-section" id="liquid-glass">
+    <div class="ds-section-title">Liquid Glass <span class="label-badge">Apple iOS 26</span></div>
+
+    <div class="lg-stage lg-stage-a">
+      <div class="lg-stage-label">Pills · Nav</div>
+      <button class="lg lg-pill lg-i lg-jelly">✦ New SOW</button>
+      <button class="lg lg-pill lg-i lg-jelly">⛽ Fuel Network</button>
+      <button class="lg lg-pill lg-i lg-jelly" style="opacity:.62">Settings</button>
+      <div class="lg lg-nav">
+        <button class="lg-nav-item lg-active">Dashboard</button>
+        <button class="lg-nav-item">Documents</button>
+        <button class="lg-nav-item">Vendors</button>
+      </div>
+    </div>
+
+    <div class="lg-stage lg-stage-b">
+      <div class="lg-stage-label">Metric Cards</div>
+      <div class="lg lg-card lg-i">
+        <div class="lg-card-label">Documents</div>
+        <div class="lg-card-val">16</div>
+        <div class="lg-card-trend">↑ 4 this week</div>
+      </div>
+      <div class="lg lg-card lg-i">
+        <div class="lg-card-label">Avg. Score</div>
+        <div class="lg-card-val">3.8</div>
+        <div class="lg-card-trend">↑ 0.3 vs last period</div>
+      </div>
+      <div class="lg lg-card lg-i">
+        <div class="lg-card-label">Vendors</div>
+        <div class="lg-card-val">29</div>
+        <div class="lg-card-trend">9 categories matched</div>
+      </div>
+    </div>
+
+    <div class="lg-stage lg-stage-c">
+      <div class="lg-stage-label">Panel · Alert</div>
+      <div class="lg lg-panel lg-i">
+        <div class="lg-panel-title">SOW Analysis Complete</div>
+        <div class="lg-panel-body">7 compliance gaps · 3 cost areas · Est. savings: ₪240K</div>
+        <div class="lg-pill-row">
+          <button class="lg lg-pill lg-i" style="font-size:.8rem;padding:.4rem 1rem">View Report →</button>
+          <button class="lg lg-pill lg-i" style="font-size:.8rem;padding:.4rem 1rem;opacity:.55">Dismiss</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="lg-stage lg-stage-d">
+      <div class="lg-stage-label">Sizes · Icons</div>
+      <button class="lg lg-pill lg-i lg-jelly" style="padding:.28rem .75rem;font-size:.74rem">XS</button>
+      <button class="lg lg-pill lg-i lg-jelly">Default</button>
+      <button class="lg lg-pill lg-i lg-jelly" style="padding:.7rem 1.9rem;font-size:1rem">Large</button>
+      <div class="lg lg-i lg-jelly" style="width:52px;height:52px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer">✦</div>
+      <div class="lg lg-i" style="border-radius:999px;padding:.55rem 1.1rem;display:flex;align-items:center;gap:.5rem;cursor:pointer">
+        <div style="width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.8)"></div>
+        <span style="font-size:.82rem;font-weight:500;color:rgba(255,255,255,.88)">Processing…</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ COLORS ══════════════════════════════════════════ -->
+  <section class="ds-section" id="colors">
+    <div class="ds-section-title">Color Palette <span class="label-badge">Foundation</span></div>
+
+    <div class="palette-grid">
+      <div class="swatch"><div class="swatch-color" style="background:#6366f1"></div><div class="swatch-label">Indigo</div><div class="swatch-hex">#6366f1</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#8b5cf6"></div><div class="swatch-label">Violet</div><div class="swatch-hex">#8b5cf6</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#06b6d4"></div><div class="swatch-label">Cyan</div><div class="swatch-hex">#06b6d4</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#14b8a6"></div><div class="swatch-label">Teal</div><div class="swatch-hex">#14b8a6</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#ec4899"></div><div class="swatch-label">Pink</div><div class="swatch-hex">#ec4899</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#10b981"></div><div class="swatch-label">Emerald</div><div class="swatch-hex">#10b981</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#f59e0b"></div><div class="swatch-label">Amber</div><div class="swatch-hex">#f59e0b</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#ef4444"></div><div class="swatch-label">Red</div><div class="swatch-hex">#ef4444</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#111827"></div><div class="swatch-label">Text 1</div><div class="swatch-hex">#111827</div></div>
+      <div class="swatch"><div class="swatch-color" style="background:#6b7280"></div><div class="swatch-label">Text 3</div><div class="swatch-hex">#6b7280</div></div>
+    </div>
+
+    <div class="grad-swatches">
+      <div class="grad-swatch" style="background:linear-gradient(135deg,#6366f1,#8b5cf6,#06b6d4)">Primary</div>
+      <div class="grad-swatch" style="background:linear-gradient(135deg,#8b5cf6,#ec4899)">Warm</div>
+      <div class="grad-swatch" style="background:linear-gradient(135deg,#06b6d4,#10b981)">Teal</div>
+      <div class="grad-swatch" style="background:linear-gradient(135deg,#f59e0b,#ef4444)">Gold</div>
+      <div class="grad-swatch" style="background:linear-gradient(145deg,#f5f7ff,#ede9ff,#e8f4ff,#f0fffe); color:rgba(99,102,241,.7)">Page BG</div>
+    </div>
+  </section>
+
+  <!-- ══ TYPOGRAPHY ══════════════════════════════════════ -->
+  <section class="ds-section" id="typography">
+    <div class="ds-section-title">Typography <span class="label-badge">Foundation</span></div>
+
+    <div class="type-row">
+      <div class="type-meta">Display · 2.6rem · 800</div>
+      <div style="font-size:2.6rem;font-weight:800;background:var(--grad-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.2">AI Procurement Dashboard</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">H1 · 2rem · 800</div>
+      <div style="font-size:2rem;font-weight:800;color:#111827;line-height:1.25">Statement of Work Generator</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">H2 · 1.4rem · 700</div>
+      <div style="font-size:1.4rem;font-weight:700;color:#111827">Document Analysis Results</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">H3 · 1.1rem · 700</div>
+      <div style="font-size:1.1rem;font-weight:700;color:#374151">Vendor Feasibility Assessment</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">Body · .95rem · 400</div>
+      <div style="font-size:.95rem;color:#374151;line-height:1.65">Upload SOW documents and let AI agents generate compliant, updated versions for 2026 procurement cycles.</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">Small · .8rem · 500</div>
+      <div style="font-size:.8rem;color:#6b7280">16 documents · 9 vendor categories · Last updated 09 Mar 2026</div>
+    </div>
+    <div class="type-row">
+      <div class="type-meta">Eyebrow · .72rem · 700 · uppercase</div>
+      <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;background:var(--grad-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Document Intelligence Pipeline</div>
+    </div>
+  </section>
+
+  <!-- ══ BUTTONS ══════════════════════════════════════════ -->
+  <section class="ds-section" id="buttons">
+    <div class="ds-section-title">Buttons <span class="label-badge">Interactive</span></div>
+
+    <div class="btn-row">
+      <button class="btn-grad">✦ Generate SOW</button>
+      <button class="btn-warm">Analyze ▸</button>
+      <button class="btn-teal">Export</button>
+      <button class="btn-danger">Delete</button>
+      <button class="btn-success">✓ Accept</button>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-glass">View Details</button>
+      <button class="btn-glass">← Back</button>
+      <button class="btn-glass">Filter ▾</button>
+      <button class="btn-outline">Learn More ↗</button>
+      <button class="btn-ghost">Cancel</button>
+    </div>
+
+    <div class="btn-row" style="align-items:center">
+      <button class="btn-grad btn-sm">Small</button>
+      <button class="btn-grad">Default</button>
+      <button class="btn-grad btn-lg">Large</button>
+      <button class="btn-grad btn-xl">✦ Extra Large</button>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-grad btn-icon" title="Generate">✦</button>
+      <button class="btn-glass btn-icon" title="Settings">⚙</button>
+      <button class="btn-outline btn-icon" title="Export">↗</button>
+      <button class="btn-ghost btn-icon" title="Close">✕</button>
+      <button class="btn-warm btn-icon" title="Favorite">♥</button>
+      <button class="btn-teal btn-icon" title="Download">↓</button>
+    </div>
+  </section>
+
+  <!-- ══ FORMS ══════════════════════════════════════════ -->
+  <section class="ds-section" id="forms">
+    <div class="ds-section-title">Forms & Inputs <span class="label-badge">Interactive</span></div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Project Name</label>
+        <input class="inp" placeholder="e.g. Computerized Fuel Network 2026">
+        <div class="form-hint">Appears in the document header</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <div class="select-wrap">
+          <select class="inp"><option>Fuel Infrastructure</option><option>Financial Processing</option><option>Maintenance</option></select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Glass Variant</label>
+        <input class="inp inp-glass" placeholder="Glass morphism style...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Error State</label>
+        <input class="inp inp-error" value="invalid@">
+        <div class="form-error-msg">⚠ Please enter a valid value</div>
+      </div>
+    </div>
+
+    <div class="form-group" style="margin-bottom:1rem">
+      <label class="form-label">Special Instructions</label>
+      <textarea class="inp" rows="3" placeholder="Describe requirements and key changes vs. previous version..." style="resize:vertical"></textarea>
+    </div>
+
+    <div class="chip-row">
+      <button class="chip active">All</button>
+      <button class="chip chip-green active">Excellent ✓</button>
+      <button class="chip">Good</button>
+      <button class="chip chip-amber">Average</button>
+      <button class="chip">Poor</button>
+      <button class="chip chip-pink">Unreadable</button>
+    </div>
+
+    <div style="display:flex;gap:1.5rem;flex-wrap:wrap;margin-top:.75rem">
+      <label class="toggle-wrap">
+        <div class="toggle"><input type="checkbox" checked><div class="toggle-track"><div class="toggle-thumb"></div></div></div>
+        <span class="toggle-label">Auto Analysis</span>
+      </label>
+      <label class="toggle-wrap">
+        <div class="toggle"><input type="checkbox"><div class="toggle-track"><div class="toggle-thumb"></div></div></div>
+        <span class="toggle-label">Vendor Search</span>
+      </label>
+      <label class="toggle-wrap">
+        <div class="toggle"><input type="checkbox" checked><div class="toggle-track"><div class="toggle-thumb"></div></div></div>
+        <span class="toggle-label">Auto Export</span>
+      </label>
+    </div>
+  </section>
+
+  <!-- ══ BADGES ══════════════════════════════════════════ -->
+  <section class="ds-section" id="badges">
+    <div class="ds-section-title">Badges & Pills <span class="label-badge">Atoms</span></div>
+
+    <div class="badge-wrap">
+      <span class="badge b-indigo"><span class="badge-dot" style="background:#6366f1"></span>AI Generated</span>
+      <span class="badge b-green"><span class="badge-dot" style="background:#10b981"></span>Approved</span>
+      <span class="badge b-amber"><span class="badge-dot" style="background:#f59e0b"></span>Pending</span>
+      <span class="badge b-red"><span class="badge-dot" style="background:#ef4444"></span>Critical</span>
+      <span class="badge b-violet">Legal</span>
+      <span class="badge b-cyan">Research</span>
+      <span class="badge b-pink">Must Have</span>
+      <span class="badge b-gray">Unchanged</span>
+    </div>
+
+    <div class="badge-wrap" style="margin-top:.75rem">
+      <span class="badge b-grad-indigo">✦ New AI Feature</span>
+      <span class="badge b-grad-teal">✓ Validated</span>
+      <span class="badge b-grad-warm">🔥 Priority</span>
+    </div>
+
+    <div class="badge-wrap" style="margin-top:.75rem">
+      <div class="score-badge score-5">5</div>
+      <div class="score-badge score-4">4</div>
+      <div class="score-badge score-3">3</div>
+      <div class="score-badge score-2">2</div>
+      <div class="score-badge score-1">1</div>
+    </div>
+
+    <div style="display:flex;gap:1.5rem;align-items:center;flex-wrap:wrap;margin-top:.75rem">
+      <div class="avatar avatar-indigo">AI</div>
+      <div class="avatar avatar-teal">DB</div>
+      <div class="avatar avatar-warm">MK</div>
+      <div class="avatar-stack">
+        <div class="avatar avatar-indigo">A</div>
+        <div class="avatar avatar-teal">B</div>
+        <div class="avatar avatar-warm">C</div>
+        <div class="avatar" style="background:rgba(0,0,0,.08);color:var(--t3);border:2px solid rgba(255,255,255,.9)">+4</div>
+      </div>
+    </div>
+
+    <div class="tag-cloud" style="margin-top:.75rem">
+      <span class="tag">Fuel Networks</span>
+      <span class="tag">IoT</span>
+      <span class="tag">Real-time Monitoring</span>
+      <span class="tag">Digital Invoicing</span>
+      <span class="tag">ISO 9001</span>
+      <span class="tag">API Integration</span>
+      <span class="tag">Fleet Management</span>
+      <span class="tag">Operational Resilience</span>
+    </div>
+  </section>
+
+  <!-- ══ METRICS ══════════════════════════════════════════ -->
+  <section class="ds-section" id="metrics">
+    <div class="ds-section-title">Metric Cards <span class="label-badge">Data</span></div>
+
+    <div class="metrics-grid">
+      <div class="metric-card mc-indigo">
+        <div class="mc-icon ic-indigo">📄</div>
+        <div class="mc-value grad-text-indigo">16</div>
+        <div class="mc-label">SOW Documents</div>
+        <span class="mc-trend up">↑ 4 this month</span>
+      </div>
+      <div class="metric-card mc-teal">
+        <div class="mc-icon ic-teal">⚡</div>
+        <div class="mc-value grad-text-teal">87%</div>
+        <div class="mc-label">Avg. Quality Score</div>
+        <span class="mc-trend up">↑ +12%</span>
+      </div>
+      <div class="metric-card mc-warm">
+        <div class="mc-icon ic-warm">🏢</div>
+        <div class="mc-value grad-text-warm">29</div>
+        <div class="mc-label">Vendors Identified</div>
+        <span class="mc-trend flat">→ No change</span>
+      </div>
+      <div class="metric-card mc-gold">
+        <div class="mc-icon ic-gold">⚠️</div>
+        <div class="mc-value grad-text-gold">7</div>
+        <div class="mc-label">Critical Issues</div>
+        <span class="mc-trend down">↓ -3 this week</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ CHARTS ══════════════════════════════════════════ -->
+  <section class="ds-section" id="charts">
+    <div class="ds-section-title">Charts <span class="label-badge">Data</span></div>
+
+    <div class="charts-grid" style="margin-bottom:1rem">
+      <div class="chart-card">
+        <div class="chart-title">Score Distribution</div>
+        <div class="chart-sub">16 SOW documents by quality</div>
+        <div class="chart-wrap"><canvas id="scoreChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Score Trend</div>
+        <div class="chart-sub">Monthly average · 12 months</div>
+        <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+        <div class="kpi-row">
+          <div class="kpi-item"><div class="kpi-val" style="background:var(--grad-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">3.8</div><div class="kpi-lbl">Average</div></div>
+          <div class="kpi-item"><div class="kpi-val" style="color:#10b981">5.0</div><div class="kpi-lbl">Peak</div></div>
+          <div class="kpi-item"><div class="kpi-val" style="color:#f59e0b">1.5</div><div class="kpi-lbl">Min</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="charts-grid charts-grid-3">
+      <div class="chart-card">
+        <div class="chart-title">Vendors by Category</div>
+        <div class="chart-sub">9 categories</div>
+        <div class="chart-wrap chart-wrap-sm"><canvas id="vendorChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Vendor Feasibility</div>
+        <div class="chart-sub">SOW compliance readiness</div>
+        <div class="chart-wrap chart-wrap-sm"><canvas id="feasChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Threshold Risk</div>
+        <div class="chart-sub">Requirement difficulty</div>
+        <div class="chart-wrap chart-wrap-sm"><canvas id="riskChart"></canvas></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ PROGRESS ══════════════════════════════════════ -->
+  <section class="ds-section" id="progress">
+    <div class="ds-section-title">Progress & Status <span class="label-badge">Feedback</span></div>
+
+    <div class="two-col">
+      <div>
+        <div class="progress-group">
+          <div class="progress-item">
+            <div class="progress-header"><span class="progress-name">Computerized Fueling</span><span class="progress-pct">92%</span></div>
+            <div class="progress-track"><div class="progress-fill" style="width:92%"></div></div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-header"><span class="progress-name">Financial Processing</span><span class="progress-pct">74%</span></div>
+            <div class="progress-track"><div class="progress-fill green" style="width:74%"></div></div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-header"><span class="progress-name">IoT Monitoring</span><span class="progress-pct">58%</span></div>
+            <div class="progress-track"><div class="progress-fill warm" style="width:58%"></div></div>
+          </div>
+          <div class="progress-item">
+            <div class="progress-header"><span class="progress-name">Cybersecurity</span><span class="progress-pct">41%</span></div>
+            <div class="progress-track"><div class="progress-fill gold" style="width:41%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.75rem">
+        <div class="chart-card" style="padding:1rem 1.25rem">
+          <div class="chart-title" style="font-size:.82rem">Processing Pipeline</div>
+          <div style="margin-top:.75rem;display:flex;flex-direction:column;gap:.6rem">
+            <div style="display:flex;align-items:center;gap:.65rem">
+              <div style="width:28px;height:28px;border-radius:8px;background:rgba(79,70,229,.08);display:flex;align-items:center;justify-content:center;font-size:.9rem">🎯</div>
+              <div style="flex:1"><div style="font-size:.8rem;font-weight:600;color:#374151">Orchestrator</div><div style="font-size:.72rem;color:#9ca3af">Analyzing documents...</div></div>
+              <div class="spinner"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:.65rem;opacity:.5">
+              <div style="width:28px;height:28px;border-radius:8px;background:rgba(16,185,129,.1);display:flex;align-items:center;justify-content:center;font-size:.9rem">⛽</div>
+              <div style="flex:1"><div style="font-size:.8rem;font-weight:600;color:#374151">Domain Expert</div><div style="font-size:.72rem;color:#9ca3af">Waiting...</div></div>
+              <span style="font-size:.9rem">⏳</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:.65rem;opacity:.5">
+              <div style="width:28px;height:28px;border-radius:8px;background:rgba(245,158,11,.1);display:flex;align-items:center;justify-content:center;font-size:.9rem">⚖️</div>
+              <div style="flex:1"><div style="font-size:.8rem;font-weight:600;color:#374151">Legal Agent</div><div style="font-size:.72rem;color:#9ca3af">Waiting...</div></div>
+              <span style="font-size:.9rem">⏳</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- ══ CARDS ══════════════════════════════════════════ -->
+  <section class="ds-section" id="cards">
+    <div class="ds-section-title">Document Cards <span class="label-badge">Content</span></div>
+
+    <div class="cards-grid">
+      <div class="doc-card doc-card-green">
+        <div class="dc-header">
+          <div class="dc-name">Computerized Fueling SOW — 2026</div>
+          <div class="score-badge score-5">5</div>
+        </div>
+        <div class="dc-tags">
+          <span class="badge b-indigo" style="font-size:.68rem">Infrastructure</span>
+          <span class="badge b-green" style="font-size:.68rem">2024</span>
+        </div>
+        <div class="dc-desc">IoT monitoring, real-time fleet integration, digital invoicing.</div>
+        <div class="dc-footer">
+          <span class="badge b-green">Excellent</span>
+          <span class="dc-meta">✓ Updated doc ready</span>
+        </div>
+      </div>
+
+      <div class="doc-card doc-card-yellow">
+        <div class="dc-header">
+          <div class="dc-name">Digital Systems Maintenance SLA</div>
+          <div class="score-badge score-4">4</div>
+        </div>
+        <div class="dc-tags">
+          <span class="badge b-violet" style="font-size:.68rem">Maintenance</span>
+          <span class="badge b-cyan" style="font-size:.68rem">2023</span>
+        </div>
+        <div class="dc-desc">SLA for fuel management systems with defined escalation procedures.</div>
+        <div class="dc-footer">
+          <span class="badge b-violet" style="background:rgba(132,204,22,.12);color:#65a30d">Good</span>
+          <span class="dc-meta">3 recommendations</span>
+        </div>
+      </div>
+
+      <div class="doc-card doc-card-amber">
+        <div class="dc-header">
+          <div class="dc-name">Payment API Technical Spec</div>
+          <div class="score-badge score-3">3</div>
+        </div>
+        <div class="dc-tags">
+          <span class="badge b-amber" style="font-size:.68rem">Processing</span>
+          <span class="badge b-gray" style="font-size:.68rem">2021</span>
+        </div>
+        <div class="dc-desc">Needs update to PCI-DSS 4.0 standards.</div>
+        <div class="dc-footer">
+          <span class="badge b-amber">Average</span>
+          <span class="dc-meta">⚠ 2 critical issues</span>
+        </div>
+      </div>
+
+      <div class="doc-card doc-card-red">
+        <div class="dc-header">
+          <div class="dc-name">Fuel Storage Safety Protocol</div>
+          <div class="score-badge score-1">1</div>
+        </div>
+        <div class="dc-tags">
+          <span class="badge b-red" style="font-size:.68rem">Safety</span>
+          <span class="badge b-gray" style="font-size:.68rem">2018</span>
+        </div>
+        <div class="dc-desc">Outdated — full rewrite required to ISO 45001:2018.</div>
+        <div class="dc-footer">
+          <span class="badge b-red">Critical</span>
+          <span class="dc-meta">🔴 Urgent</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ MODAL PREVIEW ══════════════════════════════════ -->
+  <section class="ds-section" id="modal">
+    <div class="ds-section-title">Modal <span class="label-badge">Overlay</span></div>
+
+    <div class="modal-preview">
+      <div class="modal-header">
+        <div>
+          <div style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;background:var(--grad-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:.3rem">Analysis</div>
+          <div class="modal-title">Computerized Fueling SOW — 2026</div>
+          <div style="display:flex;gap:.4rem;margin-top:.4rem;flex-wrap:wrap">
+            <span class="badge b-indigo">Infrastructure</span>
+            <span class="badge b-green">Score 5</span>
+            <span class="badge b-grad-teal">✓ Updated</span>
+          </div>
+        </div>
+        <button class="modal-close-btn">✕</button>
+      </div>
+      <div class="modal-tabs-bar">
+        <button class="modal-tab active">Analysis</button>
+        <button class="modal-tab">Research</button>
+        <button class="modal-tab">Vendors</button>
+        <button class="modal-tab">Actions</button>
+        <button class="modal-tab">Document</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex;flex-direction:column;gap:.5rem">
+          <div style="padding:.7rem 1rem;border-radius:10px;background:rgba(255,255,255,.80);backdrop-filter:blur(20px) saturate(160%);border:0.5px solid rgba(255,255,255,.88);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.92),0 2px 10px rgba(0,0,0,.05),0 0 0 .5px rgba(0,0,0,.04);border-right:3px solid rgba(79,70,229,.3)">
+            <div style="font-size:.75rem;font-weight:700;color:#6366f1;margin-bottom:.2rem">Scope & Objectives</div>
+            <div style="font-size:.82rem;color:#374151;line-height:1.6">Clear scope, timelines, and oversight mechanisms defined.</div>
+          </div>
+          <div style="padding:.7rem 1rem;border-radius:10px;background:rgba(255,255,255,.80);backdrop-filter:blur(20px) saturate(160%);border:0.5px solid rgba(255,255,255,.88);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.92),0 2px 10px rgba(0,0,0,.05),0 0 0 .5px rgba(0,0,0,.04);border-right:3px solid rgba(16,185,129,.4)">
+            <div style="font-size:.75rem;font-weight:700;color:#059669;margin-bottom:.2rem">Technical Requirements</div>
+            <div style="font-size:.82rem;color:#374151;line-height:1.6">All specs measurable, with relevant standards and acceptance criteria.</div>
+          </div>
+          <div style="padding:.7rem 1rem;border-radius:10px;background:rgba(255,255,255,.80);backdrop-filter:blur(20px) saturate(160%);border:0.5px solid rgba(255,255,255,.88);box-shadow:inset 0 1.5px 0 rgba(255,255,255,.92),0 2px 10px rgba(0,0,0,.05),0 0 0 .5px rgba(0,0,0,.04);border-right:3px solid rgba(245,158,11,.5)">
+            <div style="font-size:.75rem;font-weight:700;color:#d97706;margin-bottom:.2rem">Risk Management</div>
+            <div style="font-size:.82rem;color:#374151;line-height:1.6">Risk matrix missing — recommend adding failure scenarios and contingency plans.</div>
+          </div>
+        </div>
+        <div style="margin-top:1rem;display:flex;gap:.5rem">
+          <button class="btn-grad btn-sm">✓ Approve</button>
+          <button class="btn-glass btn-sm">Edit</button>
+          <button class="btn-ghost btn-sm">Dismiss</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ AGENT PANEL ══════════════════════════════════════ -->
+  <section class="ds-section" id="patterns">
+    <div class="ds-section-title">Agent Panel <span class="label-badge">AI Pattern</span></div>
+
+    <div class="agent-panel">
+      <div class="agent-row a-done">
+        <div class="agent-icon-wrap ai-indigo">🎯</div>
+        <div class="agent-info">
+          <div class="agent-name">Orchestrator</div>
+          <div class="agent-msg">✓ 16 documents analyzed · 3 tasks delegated</div>
+        </div>
+        <span class="badge b-green">✓ Done</span>
+      </div>
+      <div class="agent-row a-active">
+        <div class="agent-icon-wrap ai-amber">⛽</div>
+        <div class="agent-info">
+          <div class="agent-name">Domain Expert <span class="badge b-indigo" style="font-size:.65rem">Fuel</span></div>
+          <div class="agent-msg">Processing IoT requirements and real-time monitoring specs...</div>
+        </div>
+        <div class="spinner"></div>
+      </div>
+      <div class="agent-row a-wait">
+        <div class="agent-icon-wrap" style="background:rgba(107,114,128,.08)">⚖️</div>
+        <div class="agent-info">
+          <div class="agent-name">Legal + Market</div>
+          <div class="agent-msg">Awaiting domain results...</div>
+        </div>
+        <span style="font-size:1rem">⏳</span>
+      </div>
+      <div class="agent-row a-wait">
+        <div class="agent-icon-wrap" style="background:rgba(107,114,128,.08)">🌐</div>
+        <div class="agent-info">
+          <div class="agent-name">Web Research</div>
+          <div class="agent-msg">Searching current standards and pricing for 2026...</div>
+        </div>
+        <span style="font-size:1rem">⏳</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ UPLOAD ZONE ══════════════════════════════════════ -->
+  <section class="ds-section" id="upload">
+    <div class="ds-section-title">Upload Zone <span class="label-badge">Input Pattern</span></div>
+
+    <div class="upload-zone">
+      <div class="upload-icon">📁</div>
+      <div class="upload-title">Drop files here or click to browse</div>
+      <div class="upload-hint">.doc · .docx · .xlsx · .pdf — up to 50MB</div>
+    </div>
+    <div class="chip-row" style="margin-top:.75rem">
+      <span class="chip active" style="color:var(--indigo)">📄 SOW_fuel_2020.docx <button style="background:none;border:none;cursor:pointer;color:inherit;font-size:.8rem;opacity:.6;margin-left:.2rem">✕</button></span>
+      <span class="chip active" style="color:var(--cyan)">📊 pricing_2023.xlsx <button style="background:none;border:none;cursor:pointer;color:inherit;font-size:.8rem;opacity:.6;margin-left:.2rem">✕</button></span>
+    </div>
+  </section>
+
+  <!-- ══ TABLE ══════════════════════════════════════════ -->
+  <section class="ds-section" id="table">
+    <div class="ds-section-title">Data Table <span class="label-badge">Data</span></div>
+
+    <table class="glass-table">
+      <thead>
+        <tr>
+          <th>Vendor</th>
+          <th>Category</th>
+          <th>Country</th>
+          <th>Fit</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Gilbarco Veeder-Root</strong></td>
+          <td><span class="badge b-indigo" style="font-size:.68rem">Fueling</span></td>
+          <td>🇺🇸 USA</td>
+          <td>
+            <div style="display:flex;gap:3px">
+              <div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>
+              <div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>
+              <div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>
+              <div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>
+              <div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>
+            </div>
+          </td>
+          <td><span class="badge b-green">Qualified</span></td>
+        </tr>
+        <tr>
+          <td><strong>Tokheim Group</strong></td>
+          <td><span class="badge b-cyan" style="font-size:.68rem">IoT</span></td>
+          <td>🇩🇪 Germany</td>
+          <td>
+            <div style="display:flex;gap:3px">
+              <div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>
+              <div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>
+              <div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>
+              <div style="width:7px;height:7px;border-radius:50%;background:#84cc16"></div>
+              <div style="width:7px;height:7px;border-radius:50%;background:rgba(0,0,0,.1)"></div>
+            </div>
+          </td>
+          <td><span class="badge b-amber">Conditional</span></td>
+        </tr>
+        <tr>
+          <td><strong>Orpak Systems</strong></td>
+          <td><span class="badge b-violet" style="font-size:.68rem">Fleet</span></td>
+          <td>🇮🇱 Israel</td>
+          <td>
+            <div style="display:flex;gap:3px">
+              <div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>
+              <div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>
+              <div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>
+              <div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>
+              <div style="width:7px;height:7px;border-radius:50%;background:#10b981"></div>
+            </div>
+          </td>
+          <td><span class="badge b-green">Qualified</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ══ TOASTS ══════════════════════════════════════════ -->
+  <section class="ds-section" id="toasts">
+    <div class="ds-section-title">Notifications <span class="label-badge">Feedback</span></div>
+
+    <div class="toast-stack">
+      <div class="toast t-success">
+        <div class="toast-icon">✅</div>
+        <div class="toast-content">
+          <div class="toast-title">Document created</div>
+          <div class="toast-msg">Fueling SOW 2026 is ready to export.</div>
+        </div>
+        <button class="btn-ghost btn-icon btn-sm">✕</button>
+      </div>
+      <div class="toast t-warning">
+        <div class="toast-icon">⚠️</div>
+        <div class="toast-content">
+          <div class="toast-title">Review required</div>
+          <div class="toast-msg">2 clauses need manual approval before distribution.</div>
+        </div>
+        <button class="btn-ghost btn-icon btn-sm">✕</button>
+      </div>
+      <div class="toast t-info">
+        <div class="toast-icon">✦</div>
+        <div class="toast-content">
+          <div class="toast-title">AI analyzing</div>
+          <div class="toast-msg">3 agents running in parallel · ETA 2 min.</div>
+        </div>
+        <div class="spinner"></div>
+      </div>
+      <div class="toast t-error">
+        <div class="toast-icon">❌</div>
+        <div class="toast-content">
+          <div class="toast-title">Processing error</div>
+          <div class="toast-msg">damage_report.doc is unreadable — try converting to PDF.</div>
+        </div>
+        <button class="btn-ghost btn-icon btn-sm">✕</button>
+      </div>
+    </div>
+  </section>
+
+</main>
+</div>
+</div>
+
+<script>
+// ── Chart.js global defaults ─────────────────────────────
+Chart.defaults.font.family = "'Segoe UI', system-ui, sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.color = '#6b7280';
+Chart.defaults.plugins.legend.labels.boxWidth = 10;
+Chart.defaults.plugins.legend.labels.padding = 12;
+
+const gradCanvas = (ctx, c1, c2) => {
+  const g = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+  g.addColorStop(0, c1); g.addColorStop(1, c2); return g;
+};
+
+// Score distribution (bar)
+new Chart(document.getElementById('scoreChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Excellent (5)', 'Good (4)', 'Average (3)', 'Poor (2)', 'Critical (1)'],
+    datasets: [{
+      label: 'Documents',
+      data: [4, 5, 3, 2, 2],
+      backgroundColor: ctx => {
+        const colors = [
+          ['rgba(16,185,129,.75)','rgba(16,185,129,.2)'],
+          ['rgba(132,204,22,.75)','rgba(132,204,22,.2)'],
+          ['rgba(245,158,11,.75)','rgba(245,158,11,.2)'],
+          ['rgba(249,115,22,.75)','rgba(249,115,22,.2)'],
+          ['rgba(239,68,68,.75)', 'rgba(239,68,68,.2)'],
+        ];
+        return colors.map(([c1,c2]) => {
+          const g = ctx.chart.ctx.createLinearGradient(0,0,0,180);
+          g.addColorStop(0,c1); g.addColorStop(1,c2); return g;
+        });
+      },
+      borderRadius: 8,
+      borderSkipped: false,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: 'rgba(0,0,0,.06)' }, border: { display: false }, ticks: { font: { size: 10 } } },
+      y: { grid: { color: 'rgba(0,0,0,.06)' }, border: { display: false }, beginAtZero: true, ticks: { stepSize: 1 } }
+    }
+  }
+});
+
+// Trend (line)
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: {
+    labels: ['Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb'],
+    datasets: [{
+      label: 'Avg. Score',
+      data: [2.1, 2.4, 2.8, 3.0, 3.2, 2.9, 3.5, 3.8, 4.0, 3.7, 4.2, 4.5],
+      borderColor: '#6366f1',
+      backgroundColor: ctx => {
+        const g = ctx.chart.ctx.createLinearGradient(0, 0, 0, 180);
+        g.addColorStop(0,'rgba(79,70,229,.18)');
+        g.addColorStop(1,'rgba(79,70,229,.01)');
+        return g;
+      },
+      fill: true, tension: .45, pointRadius: 3, pointBackgroundColor: '#6366f1',
+      borderWidth: 2.5,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { display: false }, border: { display: false }, ticks: { font: { size: 9 } } },
+      y: { grid: { color: 'rgba(0,0,0,.06)' }, border: { display: false }, min: 0, max: 5, ticks: { stepSize: 1 } }
+    }
+  }
+});
+
+// Vendors by category (doughnut)
+new Chart(document.getElementById('vendorChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Fueling','IoT','Processing','Maintenance','Logistics','Other'],
+    datasets: [{
+      data: [8, 5, 6, 4, 3, 3],
+      backgroundColor: ['#6366f1','#06b6d4','#10b981','#f59e0b','#ec4899','#8b5cf6'],
+      borderWidth: 0,
+      hoverOffset: 6,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false, cutout: '65%',
+    plugins: {
+      legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 10, padding: 8 } }
+    }
+  }
+});
+
+// Feasibility (horizontal bar)
+new Chart(document.getElementById('feasChart'), {
+  type: 'bar',
+  data: {
+    labels: ['מוסמך','מותנה','לא מוסמך'],
+    datasets: [{
+      label: 'ספקים',
+      data: [14, 9, 6],
+      backgroundColor: ['rgba(16,185,129,.7)','rgba(245,158,11,.7)','rgba(239,68,68,.7)'],
+      borderRadius: 8, borderSkipped: false,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: 'rgba(0,0,0,.06)' }, border: { display: false } },
+      y: { grid: { display: false }, border: { display: false } }
+    }
+  }
+});
+
+// Risk (polar)
+new Chart(document.getElementById('riskChart'), {
+  type: 'polarArea',
+  data: {
+    labels: ['קריטי','גבוה','בינוני','נמוך'],
+    datasets: [{
+      data: [3, 7, 12, 8],
+      backgroundColor: [
+        'rgba(168,85,247,.65)','rgba(239,68,68,.55)','rgba(245,158,11,.5)','rgba(16,185,129,.5)'
+      ],
+      borderWidth: 0,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 10, padding: 8 } } },
+    scales: { r: { grid: { color: 'rgba(0,0,0,.06)' }, ticks: { display: false } } }
+  }
+});
+
+// Sidebar active state
+document.querySelectorAll('.sidebar-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+
+// Toggle chips demo
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => chip.classList.toggle('active'));
+});
+</script>
+</body>
+</html>

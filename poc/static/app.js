@@ -137,7 +137,7 @@ function renderSidebarDocs() {
         const selected = state.selectedPaths.includes(d.path);
         return `
           <div class="sidebar-doc-item${selected ? ' selected' : ''}" data-path="${esc(d.path)}"
-               onclick="toggleDocSelection(this, '${esc(d.path)}')">
+               onclick="toggleDocSelection(this)">
             <div class="sidebar-doc-icon">${_extIcon(d.ext)}</div>
             <div class="sidebar-doc-info">
               <div class="sidebar-doc-name">${esc(d.name)}</div>
@@ -165,7 +165,8 @@ function filterSidebarDocs(query) {
   renderSidebarDocs();
 }
 
-function toggleDocSelection(el, path) {
+function toggleDocSelection(el) {
+  const path = el.dataset.path;
   const idx = state.selectedPaths.indexOf(path);
   if (idx >= 0) {
     state.selectedPaths.splice(idx, 1);
@@ -259,13 +260,21 @@ async function sendChatMessage() {
   input.value = '';
   input.style.height = 'auto';
 
+  // ── Fast path: files already selected → skip chat, go straight to pipeline ──
+  if (state.selectedPaths.length > 0) {
+    state.proposedPrompt = query;
+    state.chatBusy = false;
+    startGeneration();
+    return;
+  }
+
   const thinkingBubble = addChatBubble('<div class="typing-indicator"><span></span><span></span><span></span></div>חושב...', 'assistant', true);
 
   try {
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: query, history: state.chatHistory }),
+      body: JSON.stringify({ message: query, history: state.chatHistory, selected_files: state.selectedPaths }),
     });
     const data = await res.json();
     if (thinkingBubble) thinkingBubble.remove();
@@ -295,12 +304,13 @@ async function sendChatMessage() {
       html += '</div>';
     }
 
-    // Show suggested actions
+    // Show suggested actions — store in state to avoid inline JS escaping issues
     if (data.suggested_actions && data.suggested_actions.length > 0) {
+      state._currentActions = data.suggested_actions;
       html += '<div class="action-suggestions">';
       html += '<div class="action-suggestions-title">פעולות מומלצות:</div>';
-      data.suggested_actions.forEach(a => {
-        html += `<button class="action-suggestion-btn" onclick="executeAction('${esc(a.id)}', '${esc(a.label)}', '${esc(a.description)}')">
+      data.suggested_actions.forEach((a, idx) => {
+        html += `<button class="action-suggestion-btn" onclick="executeActionByIdx(${idx})">
           <span class="action-suggestion-icon">${_actionIcon(a.type)}</span>
           <span class="action-suggestion-label">${esc(a.label)}</span>
         </button>`;
@@ -363,10 +373,11 @@ function _actionIcon(type) {
   return icons[type] || '✨';
 }
 
-function executeAction(id, label, description) {
-  // Insert the action as user message and send to chat
+function executeActionByIdx(idx) {
+  const a = (state._currentActions || [])[idx];
+  if (!a) return;
   const input = document.getElementById('chat-input');
-  input.value = `${label}: ${description}`;
+  input.value = `${a.label}: ${a.description}`;
   sendChatMessage();
 }
 
@@ -1013,6 +1024,8 @@ function renderProjects() {
       <div class="project-card-meta">${date} · ${(p.file_paths || []).length} קבצים</div>
       <div class="project-card-actions">
         ${p.result ? `<button class="btn-glass btn-xs" onclick="loadProjectResult('${p.id}')">צפה בתוצאות</button>` : ''}
+        ${!p.result && p.status === 'wip' && state.projectId === p.id ? `<button class="btn-grad btn-xs" onclick="viewProjectProcess()">צפה בעיבוד</button>` : ''}
+        ${!p.result && p.status === 'wip' && state.projectId !== p.id ? `<button class="btn-glass btn-xs" onclick="restartProject('${p.id}')">הפעל מחדש</button>` : ''}
         <button class="btn-glass btn-xs" onclick="openRenameModal('${p.id}', '${esc(p.name)}')">שנה שם</button>
         <button class="btn-glass btn-xs" style="color:var(--red)" onclick="deleteProject('${p.id}')">מחק</button>
       </div>
@@ -1036,6 +1049,20 @@ async function loadProjectResult(pid) {
     renderResultView(project.result);
     showScreen('results');
   }
+}
+
+function viewProjectProcess() {
+  showScreen('thinking');
+}
+
+async function restartProject(pid) {
+  const project = state.projects.find(p => p.id === pid);
+  if (!project || !project.file_paths || !project.file_paths.length) return;
+  state.selectedPaths = [...project.file_paths];
+  state.proposedPrompt = project.context || project.name || '';
+  state.projectId = pid;
+  showScreen('chat');
+  startGeneration();
 }
 
 function openRenameModal(pid, currentName) {
@@ -1142,23 +1169,85 @@ function renderAnalytics(data) {
       <div class="stat-label">עלות משוערת</div>
     </div>`;
 
-  // Adoption chart
+  // Adoption chart with enhanced styling
   const chartEl = document.getElementById('adoption-chart');
   if (chartEl && f.accepts !== undefined) {
+    const accepts = f.accepts || 0;
+    const rejects = f.rejects || 0;
+    const edits = f.edits || 0;
+    const total = accepts + rejects + edits || 1;
+
+    // Update adoption stats
+    const acceptsPct = total > 0 ? Math.round((accepts / total) * 100) : 0;
+    const rejectsPct = total > 0 ? Math.round((rejects / total) * 100) : 0;
+    const editsPct = total > 0 ? Math.round((edits / total) * 100) : 0;
+
+    document.getElementById('adoption-accepts').textContent = accepts;
+    document.getElementById('adoption-accepts-pct').textContent = acceptsPct + '%';
+    document.getElementById('adoption-accepts-bar').style.width = acceptsPct + '%';
+
+    document.getElementById('adoption-rejects').textContent = rejects;
+    document.getElementById('adoption-rejects-pct').textContent = rejectsPct + '%';
+    document.getElementById('adoption-rejects-bar').style.width = rejectsPct + '%';
+
+    document.getElementById('adoption-edits').textContent = edits;
+    document.getElementById('adoption-edits-pct').textContent = editsPct + '%';
+    document.getElementById('adoption-edits-bar').style.width = editsPct + '%';
+
     new Chart(chartEl.getContext('2d'), {
       type: 'doughnut',
       data: {
         labels: ['אושרו', 'נדחו', 'עריכות'],
         datasets: [{
-          data: [f.accepts || 0, f.rejects || 0, f.edits || 0],
-          backgroundColor: ['#16a34a', '#dc2626', '#4f46e5'],
-          borderWidth: 0,
+          data: [accepts, rejects, edits],
+          backgroundColor: [
+            'rgba(8, 145, 178, 0.85)',
+            'rgba(124, 58, 237, 0.85)',
+            'rgba(79, 70, 229, 0.85)'
+          ],
+          borderColor: [
+            'rgba(255, 255, 255, 0.5)',
+            'rgba(255, 255, 255, 0.5)',
+            'rgba(255, 255, 255, 0.5)'
+          ],
+          borderWidth: 2.5,
+          hoverBorderWidth: 3.5,
         }],
       },
       options: {
         responsive: true,
+        maintainAspectRatio: true,
         plugins: {
-          legend: { position: 'bottom', labels: { font: { size: 13 } } },
+          legend: {
+            position: 'bottom',
+            labels: {
+              font: { size: 12, weight: '600' },
+              color: '#374151',
+              padding: 14,
+              usePointStyle: true,
+              pointStyle: 'circle',
+              boxWidth: 10,
+            },
+          },
+          tooltip: {
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+            titleColor: '#111827',
+            bodyColor: '#374151',
+            borderColor: 'rgba(79, 70, 229, 0.2)',
+            borderWidth: 1,
+            padding: 10,
+            displayColors: true,
+            titleFont: { size: 12, weight: '600' },
+            bodyFont: { size: 11 },
+            callbacks: {
+              label: function(context) {
+                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                const value = context.parsed.y;
+                const percent = total > 0 ? Math.round((value / total) * 100) : 0;
+                return context.label + ': ' + value + ' (' + percent + '%)';
+              }
+            }
+          }
         },
       },
     });
@@ -1198,16 +1287,50 @@ function renderScoreChart() {
     type: 'bar',
     data: {
       labels: ['מצוין (5)','טוב (4)','ממוצע (3)','חלש (2)','גרוע (1)','לא קריא'],
-      datasets: [{ label: 'מסמכים', data: [...counts, unread],
-        backgroundColor: ['#16a34a','#65a30d','#d97706','#ea580c','#dc2626','#6b7280'],
-        borderRadius: 6, borderSkipped: false }],
+      datasets: [{
+        label: 'מסמכים',
+        data: [...counts, unread],
+        backgroundColor: [
+          'rgba(8, 145, 178, 0.8)',
+          'rgba(79, 70, 229, 0.8)',
+          'rgba(217, 119, 6, 0.8)',
+          'rgba(124, 58, 237, 0.8)',
+          'rgba(219, 39, 119, 0.8)',
+          'rgba(107, 114, 128, 0.6)'
+        ],
+        borderColor: 'rgba(255, 255, 255, 0.3)',
+        borderWidth: 1,
+        borderRadius: 6,
+        borderSkipped: false,
+      }],
     },
     options: {
-      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          titleColor: '#111827',
+          bodyColor: '#374151',
+          borderColor: 'rgba(79, 70, 229, 0.2)',
+          borderWidth: 1,
+          padding: 10,
+          titleFont: { size: 12, weight: '600' },
+          bodyFont: { size: 11 },
+        }
+      },
       scales: {
-        x: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: 'rgba(0,0,0,.05)' } },
-        y: { ticks: { font: { size: 12 } }, grid: { display: false } },
+        x: {
+          beginAtZero: true,
+          ticks: { stepSize: 1, font: { size: 11 } },
+          grid: { color: 'rgba(0,0,0,.05)' }
+        },
+        y: {
+          ticks: { font: { size: 12, weight: '500' } },
+          grid: { display: false }
+        },
       },
     },
   });
@@ -1215,13 +1338,16 @@ function renderScoreChart() {
 
 function renderScoreLegend() {
   const items = [
-    { label: 'מצוין', color: '#16a34a' }, { label: 'טוב', color: '#65a30d' },
-    { label: 'ממוצע', color: '#d97706' }, { label: 'חלש', color: '#ea580c' },
-    { label: 'גרוע', color: '#dc2626' }, { label: 'לא קריא', color: '#6b7280' },
+    { label: 'מצוין', color: 'linear-gradient(135deg, #0891b2 0%, #0d9488 100%)' },
+    { label: 'טוב', color: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)' },
+    { label: 'ממוצע', color: 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)' },
+    { label: 'חלש', color: 'linear-gradient(135deg, #7c3aed 0%, #db2777 100%)' },
+    { label: 'גרוע', color: 'linear-gradient(135deg, #db2777 0%, #dc2626 100%)' },
+    { label: 'לא קריא', color: '#9ca3af' },
   ];
   document.getElementById('score-legend').innerHTML = items.map(i => `
     <div class="legend-item">
-      <div class="legend-dot" style="background:${i.color}"></div><span>${i.label}</span>
+      <div class="legend-dot" style="background:${i.color};box-shadow:0 0 8px rgba(0,0,0,.1)"></div><span>${i.label}</span>
     </div>`).join('');
 }
 

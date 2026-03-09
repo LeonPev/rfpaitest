@@ -209,10 +209,43 @@ def _detect_analytical_request(message: str) -> bool:
     return match or is_long
 
 
-def chat_recommend(message: str, history: list, available_docs: list) -> dict:
+def _fallback_recommend(message: str, available_docs: list) -> list:
+    """Pick relevant docs by keyword when Gemini is unavailable."""
+    msg_lower = message.lower()
+    if "דלק" in message or "fuel" in msg_lower:
+        docs = [d for d in available_docs if 'דלק' in d.get('name', '') or 'fuel' in d.get('name', '').lower()]
+    elif "ניקוי" in message or "clean" in msg_lower:
+        docs = [d for d in available_docs if 'ניקוי' in d.get('name', '')]
+    else:
+        docs = [d for d in available_docs if 'sow' in d.get('name', '').lower()]
+    return docs[:5] if docs else available_docs[:4]
+
+
+def chat_recommend(message: str, history: list, available_docs: list, selected_files: list | None = None) -> dict:
     """Use Gemini Flash to recommend docs and suggest actions, or trigger direct pipeline."""
 
-    # Check if this is an analytical request that should go to pipeline directly
+    selected_files = selected_files or []
+
+    # ── Priority path: user already selected files → go straight to pipeline ──
+    if selected_files:
+        # Build recommended list from user-selected files (match by path)
+        path_set = set(selected_files)
+        user_docs = [d for d in available_docs if d.get('path') in path_set]
+        # Fall back to the raw paths if not found in available_docs
+        if not user_docs:
+            user_docs = [{"path": p, "name": Path(p).name} for p in selected_files]
+
+        doc_names = ", ".join([d['name'][:40] for d in user_docs[:5]])
+        return {
+            "message": f"✓ מתחיל עיבוד\n📄 מסמכים נבחרים: {doc_names}\n⏳ טוען סוכנים (מומחה תחום, משפטי, שוק)...",
+            "recommended_files": user_docs,
+            "suggested_actions": [],
+            "proposed_prompt": message,
+            "ready_to_generate": True,
+            "auto_start": True,
+        }
+
+    # ── Analytical request detected → auto-recommend files and start pipeline ──
     if _detect_analytical_request(message):
         # Recommend relevant SOW documents for analysis
         msg_lower = message.lower()
@@ -296,23 +329,27 @@ def chat_recommend(message: str, history: list, available_docs: list) -> dict:
                 rf['category'] = doc.get('category', '')
                 rf['size_kb'] = doc.get('size_kb', 0)
         return data
-    except json.JSONDecodeError as je:
-        # Log the error for debugging
-        print(f"JSON parse error in chat_recommend: {str(je)[:200]}")
-        # If message looks analytical, go straight to pipeline
-        if _detect_analytical_request(message):
-            msg_lower = message.lower()
-            # Smart domain detection
-            if "דלק" in message or "fuel" in msg_lower:
-                docs = [d for d in available_docs if 'דלק' in d.get('name', '') or 'fuel' in d.get('name', '').lower()]
-            elif "ניקוי" in message or "clean" in msg_lower:
-                docs = [d for d in available_docs if 'ניקוי' in d.get('name', '')]
-            else:
-                docs = [d for d in available_docs if 'sow' in d.get('name', '').lower()]
-
-            recommended = docs[:5] if docs else available_docs[:4]
+    except (json.JSONDecodeError, Exception) as e:
+        print(f"Error in chat_recommend: {type(e).__name__}: {str(e)[:200]}")
+        # If user had files selected, use those and go to pipeline
+        if selected_files:
+            path_set = set(selected_files)
+            user_docs = [d for d in available_docs if d.get('path') in path_set]
+            if not user_docs:
+                user_docs = [{"path": p, "name": Path(p).name} for p in selected_files]
             return {
-                "message": f"✓ מעבדת את בקשת הניתוח בצורה ישירה\n📊 ניתוח מלא של {len(recommended)} מסמכים בעזרת סוכנים מומחים...",
+                "message": f"✓ מתחיל עיבוד עם {len(user_docs)} מסמכים שנבחרו...",
+                "recommended_files": user_docs,
+                "suggested_actions": [],
+                "proposed_prompt": message,
+                "ready_to_generate": True,
+                "auto_start": True,
+            }
+        # Otherwise try to recommend docs and start pipeline
+        if _detect_analytical_request(message):
+            recommended = _fallback_recommend(message, available_docs)
+            return {
+                "message": f"✓ מעבד את הבקשה — {len(recommended)} מסמכים נבחרו אוטומטית...",
                 "recommended_files": recommended,
                 "suggested_actions": [],
                 "proposed_prompt": message,
@@ -320,36 +357,7 @@ def chat_recommend(message: str, history: list, available_docs: list) -> dict:
                 "auto_start": True,
             }
         return {
-            "message": "בואי נסגל את הבקשה - בחרי מסמכים מהסרגל הצדדי או תני לי שם ספציפי של קובץ.",
-            "recommended_files": [],
-            "suggested_actions": [],
-            "proposed_prompt": None,
-            "ready_to_generate": False,
-        }
-    except Exception as e:
-        print(f"Exception in chat_recommend: {str(e)[:200]}")
-        # Fallback: if it looks analytical, go to pipeline
-        if _detect_analytical_request(message):
-            msg_lower = message.lower()
-            # Smart domain detection
-            if "דלק" in message or "fuel" in msg_lower:
-                docs = [d for d in available_docs if 'דלק' in d.get('name', '') or 'fuel' in d.get('name', '').lower()]
-            elif "ניקוי" in message or "clean" in msg_lower:
-                docs = [d for d in available_docs if 'ניקוי' in d.get('name', '')]
-            else:
-                docs = [d for d in available_docs if 'sow' in d.get('name', '').lower()]
-
-            recommended = docs[:5] if docs else available_docs[:4]
-            return {
-                "message": f"✓ משנה מצב לעיבוד מלא של הניתוח שלך...\n⚙️ סוכנים בעבודה (מומחה תחום דלק, משפטי, שוק)...",
-                "recommended_files": recommended,
-                "suggested_actions": [],
-                "proposed_prompt": message,
-                "ready_to_generate": True,
-                "auto_start": True,
-            }
-        return {
-            "message": "בואי נסגל את הבקשה - בחרי מסמכים מהסרגל הצדדי או תני לי שם ספציפי של קובץ.",
+            "message": "בחרי מסמכים מהסרגל הצדדי ושלחי שוב.",
             "recommended_files": [],
             "suggested_actions": [],
             "proposed_prompt": None,
