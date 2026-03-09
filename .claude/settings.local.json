@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:docs.google.com)",
+      "WebFetch(domain:doc-0s-0s-docstext.googleusercontent.com)",
+      "Bash(pip:*)",
+      "Bash(pip3:*)",
+      "Bash(python -c:*)"
+    ]
+  }
+}
