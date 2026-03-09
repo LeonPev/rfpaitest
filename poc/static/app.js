@@ -167,6 +167,7 @@ function filterSidebarDocs(query) {
 
 function toggleDocSelection(el) {
   const path = el.dataset.path;
+  if (!path || !path.trim()) return;
   const idx = state.selectedPaths.indexOf(path);
   if (idx >= 0) {
     state.selectedPaths.splice(idx, 1);
@@ -413,6 +414,8 @@ function addSuggestion(el) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 async function startGeneration() {
+  // Filter out empty/invalid paths
+  state.selectedPaths = state.selectedPaths.filter(p => p && p.trim());
   if (state.selectedPaths.length === 0) return;
 
   const context = state.proposedPrompt || '';

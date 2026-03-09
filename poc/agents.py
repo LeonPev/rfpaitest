@@ -388,9 +388,11 @@ def _ascii_display_name(filename: str) -> str:
 
 def _upload_files(file_paths: list) -> list:
     uploaded = []
+    # Filter out empty/invalid paths
+    file_paths = [fp for fp in file_paths if fp and fp.strip() and fp.strip() != '.']
     for i, path in enumerate(file_paths):
         p = Path(path)
-        if not p.exists():
+        if not p.exists() or not p.is_file():
             raise FileNotFoundError(f"File not found: {path}")
         disp_name = _ascii_display_name(p.name)
         ext = p.suffix.lower()

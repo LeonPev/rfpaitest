@@ -1,0 +1,22 @@
+{
+  "id": "7739b01e-0cea-434b-9b19-8761df409c29",
+  "name": "cerate a new  up to date SOW that fits 2026-2030",
+  "status": "wip",
+  "created_at": "2026-03-10T00:23:03.910984",
+  "updated_at": "2026-03-10T00:23:03.911045",
+  "file_paths": [
+    "C:\\Users\\Kimi\\Desktop\\src\\rfpaitest\\data\\SOW\\דלק\\סליקה\\נספח ארכיון - תכולת עבודה למכרז הסליקה SOW  - 20-6-19.doc",
+    "C:\\Users\\Kimi\\Desktop\\src\\rfpaitest\\data\\SOW\\דלק\\סליקה\\תנאים מיוחדים למכרז שירותי סליקה - 20.6.19.docx"
+  ],
+  "context": "cerate a new  up to date SOW that fits 2026-2030",
+  "sub_type": "כללי",
+  "result": null,
+  "chat_history": [
+    {
+      "role": "user",
+      "content": "cerate a new  up to date SOW that fits 2026-2030"
+    }
+  ],
+  "feedback": [],
+  "generated_file": null
+}
