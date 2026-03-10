@@ -1,0 +1,21 @@
+{
+  "id": "ef9846b0-d63a-4a2e-a464-2d9eac56dcba",
+  "name": "תחדש את זה בהתאמה ל 2026-2030 עם דגש על שינויים בש",
+  "status": "wip",
+  "created_at": "2026-03-10T00:54:34.427433",
+  "updated_at": "2026-03-10T00:54:34.427477",
+  "file_paths": [
+    "C:\\Users\\Kimi\\Desktop\\src\\rfpaitest\\data\\SOW\\דלק\\סליקה\\נספח ארכיון - תכולת עבודה למכרז הסליקה SOW  - 20-6-19.doc"
+  ],
+  "context": "תחדש את זה בהתאמה ל 2026-2030 עם דגש על שינויים בשוק וטכנולוגי",
+  "sub_type": "כללי",
+  "result": null,
+  "chat_history": [
+    {
+      "role": "user",
+      "content": "תחדש את זה בהתאמה ל 2026-2030 עם דגש על שינויים בשוק וטכנולוגי"
+    }
+  ],
+  "feedback": [],
+  "generated_file": null
+}
