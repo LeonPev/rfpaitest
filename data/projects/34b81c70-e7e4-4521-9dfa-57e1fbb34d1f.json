@@ -1,0 +1,22 @@
+{
+  "id": "34b81c70-e7e4-4521-9dfa-57e1fbb34d1f",
+  "name": "create a new SOW taht fits 2026-2030",
+  "status": "wip",
+  "created_at": "2026-03-10T00:45:12.331712",
+  "updated_at": "2026-03-10T00:45:12.331752",
+  "file_paths": [
+    "C:\\Users\\Kimi\\Desktop\\src\\rfpaitest\\data\\SOW\\דלק\\סליקה\\תנאים מיוחדים למכרז שירותי סליקה - 20.6.19.docx",
+    "C:\\Users\\Kimi\\Desktop\\src\\rfpaitest\\data\\SOW\\דלק\\סליקה\\נספח ארכיון - תכולת עבודה למכרז הסליקה SOW  - 20-6-19.doc"
+  ],
+  "context": "create a new SOW taht fits 2026-2030",
+  "sub_type": "כללי",
+  "result": null,
+  "chat_history": [
+    {
+      "role": "user",
+      "content": "create a new SOW taht fits 2026-2030"
+    }
+  ],
+  "feedback": [],
+  "generated_file": null
+}
