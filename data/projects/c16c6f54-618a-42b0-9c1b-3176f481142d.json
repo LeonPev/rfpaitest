@@ -1,16 +1,31 @@
 {
   "id": "c16c6f54-618a-42b0-9c1b-3176f481142d",
-  "name": "עדכון SOW לאספקת דלקים ושירותי תדלוק: עדכן את 'נספ",
+  "name": "פרויקט ללא שם",
   "status": "pending",
-  "created_at": "2026-03-10T00:44:41.428475",
-  "updated_at": "2026-03-10T00:44:41.428531",
-  "file_paths": [
-    "C:\\Users\\Kimi\\Desktop\\src\\rfpaitest\\data\\SOW\\דלק\\רשתות (תדלוק ממוחשב)\\נספח א' לבל''מ-מסמך תכולת העבודה -עדכון 1 (S.O.W).doc"
-  ],
+  "created_at": "2026-03-10T11:23:30.520425",
+  "updated_at": "2026-03-10T11:23:30.520495",
+  "file_paths": [],
   "context": "",
   "sub_type": "כללי",
   "result": null,
-  "chat_history": [],
+  "chat_history": [
+    {
+      "role": "user",
+      "content": "ל"
+    },
+    {
+      "role": "assistant",
+      "content": "שגיאה: 403 PERMISSION_DENIED. {'error': {'code': 403, 'message': 'Your API key was reported as leaked. Please use another API key.', 'status': 'PERMISSION_DENIED'}}"
+    },
+    {
+      "role": "user",
+      "content": "דגכ"
+    },
+    {
+      "role": "assistant",
+      "content": "שגיאה: 403 PERMISSION_DENIED. {'error': {'code': 403, 'message': 'Your API key was reported as leaked. Please use another API key.', 'status': 'PERMISSION_DENIED'}}"
+    }
+  ],
   "feedback": [],
   "generated_file": null
 }

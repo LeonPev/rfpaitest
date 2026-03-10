@@ -1,0 +1,24 @@
+{
+  "id": "aa15c441-f02c-4750-bcd2-c1c8b64234aa",
+  "name": "גכ",
+  "status": "wip",
+  "created_at": "2026-03-10T12:05:41.736591",
+  "updated_at": "2026-03-10T12:05:41.739189",
+  "file_paths": [
+    "C:\\Users\\Kimi\\Desktop\\src\\rfpaitest\\data\\SOW\\דלק\\סליקה\\נספח א' - מסמך תכולת עבודה למכרז הסליקה - 2026-2030.md",
+    "C:\\Users\\Kimi\\Desktop\\src\\rfpaitest\\data\\SOW\\דלק\\סליקה\\נספח א' לבל''מ-מסמך תכולת העבודה -עדכון 1 (S.O.W).md",
+    "C:\\Users\\Kimi\\Desktop\\src\\rfpaitest\\data\\SOW\\דלק\\סליקה\\נספח ארכיון - תכולת עבודה למכרז הסליקה - 20-6-19.md",
+    "C:\\Users\\Kimi\\Desktop\\src\\rfpaitest\\data\\SOW\\דלק\\סליקה\\נספח א' לבל''מ-מסמך תכולת העבודה 2026-2030 (S.O.W).md"
+  ],
+  "context": "גכ",
+  "sub_type": "כללי",
+  "result": null,
+  "chat_history": [
+    {
+      "role": "user",
+      "content": "גכ"
+    }
+  ],
+  "feedback": [],
+  "generated_file": null
+}
